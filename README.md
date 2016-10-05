@@ -19,3 +19,7 @@ DiscordGo: https://github.com/bwmarrin/discordgo
 Color: https://github.com/fatih/color
 [go get github.com/fatih/color] 
 [go install -a github.com/fatih/color]
+
+
+//讓 misty 加入自己 server 用的連結
+https://discordapp.com/oauth2/authorize?client_id=231105148074721280&scope=bot&permissions=0
