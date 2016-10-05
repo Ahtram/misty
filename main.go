@@ -45,13 +45,13 @@ func main() {
 	}
 
 	// Get the account information.
-	u, err := dg.User("@me")
+	user, err := dg.User("@me")
 	if err != nil {
 		fmt.Println("error obtaining account details,", err)
 	}
 
 	// Store the account ID for later use.
-	BotID = u.ID
+	BotID = user.ID
 
 	fmt.Println("BotID: " + green(BotID))
 
@@ -109,4 +109,25 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "pong" {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Ping!")
 	}
+
+	if m.Content == "misty" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "蝦? 叫我喔?")
+	}
+
+	if m.Content == "今天幾點開會?" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "9點啦!")
+	}
+
+	if m.Content == "吃飽沒?" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "還沒啦!")
+	}
+
+	if m.Content == "開會了" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "https://hangouts.google.com/call/wpi5vlbz6bcc5bm7nromkueyrae")
+	}
+
+	if m.Content == "?" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "?")
+	}
+
 }
