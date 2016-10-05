@@ -9,3 +9,9 @@ Add ssh key for user: https://www.digitalocean.com/community/questions/ssh-new-u
 建立 user neo 並且產生 DDnd4y2EVbZY.ppk
 
 在Server上安裝Go環境: https://www.digitalocean.com/community/tutorials/how-to-install-go-1-6-on-ubuntu-14-04
+
+建立 ssh key 讓 Server 可以 git clone 我們的 repo. 當然還須要改一下設定檔 config 讓 gitlab 直接使用該 private key
+
+misty 專案 depend 下面的東西:
+DiscordGo: https://github.com/bwmarrin/discordgo [go install -a github.com/bwmarrin/discordgo]
+Color: https://github.com/fatih/color [go install -a github.com/fatih/color]
