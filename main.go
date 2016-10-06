@@ -35,6 +35,7 @@ func init() {
 }
 
 func main() {
+	// A welcome message with version number.
 	printWelcomeMessage()
 
 	// Create a new Discord session using the provided login information.
@@ -93,41 +94,41 @@ func starStringLine(length int) string {
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func messageCreate(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
-	if m.Author.ID == BotID {
+	if messageCreate.Author.ID == BotID {
 		return
 	}
 
 	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Pong!")
+	if messageCreate.Content == "ping" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "Pong!")
 	}
 
 	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Ping!")
+	if messageCreate.Content == "pong" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "Ping!")
 	}
 
-	if m.Content == "misty" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "蝦? 叫我喔?")
+	if messageCreate.Content == "misty" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "蝦? 叫我喔?")
 	}
 
-	if m.Content == "今天幾點開會?" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "9點啦!")
+	if messageCreate.Content == "今天幾點開會?" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "9點啦!")
 	}
 
-	if m.Content == "吃飽沒?" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "還沒啦!")
+	if messageCreate.Content == "吃飽沒?" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "還沒啦!")
 	}
 
-	if m.Content == "開會了" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "https://hangouts.google.com/call/wpi5vlbz6bcc5bm7nromkueyrae")
+	if messageCreate.Content == "開會了" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "https://hangouts.google.com/call/wpi5vlbz6bcc5bm7nromkueyrae")
 	}
 
-	if m.Content == "?" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "?")
+	if messageCreate.Content == "?" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "?")
 	}
 
 }
