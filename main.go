@@ -10,7 +10,7 @@ import (
 
 //Version number and program name define.
 const programName = "Misty"
-const version = "0.0.0.1"
+const version = "0.0.0.2"
 
 //Color defines.
 var mag = color.New(color.FgHiMagenta).SprintFunc()
@@ -39,14 +39,14 @@ func main() {
 	printWelcomeMessage()
 
 	// Create a new Discord session using the provided login information.
-	dg, err := discordgo.New(Email, Password, Token)
+	session, err := discordgo.New(Email, Password, Token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
 
 	// Get the account information.
-	user, err := dg.User("@me")
+	user, err := session.User("@me")
 	if err != nil {
 		fmt.Println("error obtaining account details,", err)
 	}
@@ -57,10 +57,10 @@ func main() {
 	fmt.Println("BotID: " + green(BotID))
 
 	// Register messageCreate as a callback for the messageCreate events.
-	dg.AddHandler(messageCreate)
+	session.AddHandler(messageCreate)
 
 	// Open the websocket and begin listening.
-	err = dg.Open()
+	err = session.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
