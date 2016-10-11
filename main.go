@@ -1,22 +1,11 @@
-package misty
+package main
 
 import (
 	"flag"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/fatih/color"
 )
-
-//Version number and program name define.
-const programName = "Misty"
-const version = "0.0.0.2"
-
-//Color defines.
-var mag = color.New(color.FgHiMagenta).SprintFunc()
-var yellow = color.New(color.FgHiYellow).SprintFunc()
-var cyan = color.New(color.FgHiCyan).SprintFunc()
-var green = color.New(color.FgHiGreen).SprintFunc()
 
 // Variables used for command line parameters.
 var (
@@ -36,7 +25,7 @@ func init() {
 
 func main() {
 	// A welcome message with version number.
-	printWelcomeMessage()
+	PrintWelcomeMessage()
 
 	// Create a new Discord session using the provided login information.
 	session, err := discordgo.New(Email, Password, Token)
@@ -56,8 +45,8 @@ func main() {
 
 	fmt.Println("BotID: " + green(BotID))
 
-	// Register messageCreate as a callback for the messageCreate events.
-	session.AddHandler(messageCreate)
+	// Register messageHandler as a callback for the messageHandler events.
+	session.AddHandler(messageHandler)
 
 	// Open the websocket and begin listening.
 	err = session.Open()
@@ -72,29 +61,9 @@ func main() {
 	return
 }
 
-func printWelcomeMessage() {
-	//Plain welcome text.
-	welcomeText := "*   " + programName + " Version [" + version + "]   *"
-
-	//The colored welcome text.
-	colorWelcomeText := fmt.Sprintf("%s   %s Version [%s]   %s", cyan("*"), mag(programName), yellow(version), cyan("*"))
-
-	fmt.Println(cyan(starStringLine(len(welcomeText))))
-	fmt.Println(colorWelcomeText)
-	fmt.Println(cyan(starStringLine(len(welcomeText))))
-}
-
-func starStringLine(length int) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = '*'
-	}
-	return string(b)
-}
-
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
-func messageCreate(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
+func messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
 	if messageCreate.Author.ID == BotID {

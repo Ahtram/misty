@@ -1,10 +1,4 @@
-package misty
-
-// A SheetData represent one tab of sheet in your Google sheet doc.
-type GSheetData struct {
-	title       string
-	stringTable [][]string
-}
+package gshelp
 
 // ToFormattedString returns an output string just for print and debuging.
 func (sd GSheetData) ToFormattedString(columnSeperator string, rowSeperator string) string {

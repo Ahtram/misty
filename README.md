@@ -1,6 +1,12 @@
 This is the private robot for projectA discord channel written by Golang.
 
-This is just a note text file for me to record things that's not so important so please ignore it.
+[目標]
+1. Misty 可以讓玩家查詢遊戲內的煉金合成公式。
+2. 公式資料來源為 Google Sheet 內的資料，所以 Bot 回傳的內容會隨著文件更新一併改變，目前預定作法為非即時查詢，這樣比較省效能。
+3. 支援多語系(繁簡英日)。
+4. 其他功能想到的話可以後續再繼續擴充。 
+
+Below is just some random note text for me to remember things that's not so important so please ignore it.
 
 Server 連線設定教學
 GoCrazy Server: 128.199.246.158 以 DDrd4y2EVbZY.ppk ssh 遠端登入 root
@@ -12,15 +18,19 @@ Add ssh key for user: https://www.digitalocean.com/community/questions/ssh-new-u
 
 建立 ssh key [GVSj1XnUGIT7c59] 讓 Server 可以 git clone 我們的 repo. 當然還須要改一下設定檔 config 讓 gitlab 直接使用該 private key
 
-misty 專案 depend 下面的東西:
+misty 專案 depend 下面的 package :
 DiscordGo: https://github.com/bwmarrin/discordgo
 [go get github.com/bwmarrin/discordgo] 
 Color: https://github.com/fatih/color
 [go get github.com/fatih/color] 
 
+Discord Application 後台
+https://discordapp.com/developers/applications/me/231105148074721280
+
 //讓 misty 加入自己 server 用的連結
 https://discordapp.com/oauth2/authorize?client_id=231105148074721280&scope=bot&permissions=0
 
+//執行指令
 ./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.CtZU3A.vxmIdJICDZizVjAmM8908VrAD5c"
 or
 ./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.CtZU3A.vxmIdJICDZizVjAmM8908VrAD5c"
@@ -28,5 +38,4 @@ or
 ./misty -e [email] -p [password]
 
 使用 tmux 指令來背景常駐運作 misty
-
-教學: https://gist.github.com/MohamedAlaa/2961058
+tmux 教學: https://gist.github.com/MohamedAlaa/2961058
