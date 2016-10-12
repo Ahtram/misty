@@ -11,6 +11,11 @@ func (sd GSheetData) ToFormattedString(columnSeperator string, rowSeperator stri
 
 	var returnString = ""
 	for i, row := range sd.StringTable {
+		//Chech if the fist cell of this row is emety. If it is, ignore this row.
+		if len(row) > 0 && row[0] == "" {
+			continue
+		}
+
 		for j, cell := range row {
 			returnString += cell
 			if j < len(row)-1 {

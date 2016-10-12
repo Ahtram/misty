@@ -46,6 +46,8 @@ func CellFeedToGSheetData(cellFeedXMLContent string) GSheetData {
 		for _, v := range feed.Entries {
 			row, _ := strconv.Atoi(v.Cell.Row)
 			col, _ := strconv.Atoi(v.Cell.Col)
+			row = row - 1
+			col = col - 1
 
 			if row < len(returnGSheetData.StringTable) {
 				if col < len(returnGSheetData.StringTable[row]) {
