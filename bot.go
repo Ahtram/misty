@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strconv"
 	"net/http"
 
 	"gitlab.com/ahtram/misty/gshelp"
@@ -18,6 +19,7 @@ var (
 	password string
 	token    string
 	botID    string
+	localizedStringGSheetData []gshelp.GSheetData
 )
 
 // Hard coded URLs
@@ -39,7 +41,7 @@ func SyncGSData() {
 	localizedStringWorkSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
 
 	// All tabs' GSeetData.
-	localizedStringGSheetData := []gshelp.GSheetData{}
+	localizedStringGSheetData = []gshelp.GSheetData{}
 
 	if err != nil {
 		//Oh carp!
@@ -50,21 +52,20 @@ func SyncGSData() {
 		URLs := gshelp.WorkSheetFeedToCellFeedURLs(localizedStringWorkSheetXMLContent)
 
 		// Get all cellfeeds.
-		for _, URL := range URLs {
+		for i, URL := range URLs {
+			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
 			loclizedStringCellXMLContent, err := fetchFeedXML(URL)
 			if err != nil {
 				fmt.Println("[Error] " + err.Error())
 			} else {
-				fmt.Println("[Tab Result]: ")
-				// fmt.Println(loclizedStringCellXMLContent)
 				tabData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
-				fmt.Println(tabData.ToDefaultString())
-				localizedStringGSheetData = append(localizedStringGSheetData, tabData)
 
-				// gSheetData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
-				// if gSheetData != nil {
-				// 	append(localizedStringGSheetData, gSheetData)
-				// }
+				// fmt.Println("[Tab Result]: ")
+				fmt.Println(tabData.ToDefaultString())
+
+				// Store in the golbal var.
+				localizedStringGSheetData = append(localizedStringGSheetData, tabData)
+				fmt.Println("[Complete]")
 			}
 		}
 	}
@@ -165,6 +166,16 @@ func messageHandler(session *discordgo.Session, messageCreate *discordgo.Message
 
 	if messageCreate.Content == "?" {
 		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "?")
+	}
+
+	if messageCreate.Content == "嚇死你!" {
+		if len(localizedStringGSheetData) > 0 {
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, ":pig:")
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, localizedStringGSheetData[0].ToDefaultString())
+		}else {
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "嚇不倒我的:yum:")
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "len(localizedStringGSheetData): " + strconv.Itoa(len(localizedStringGSheetData)))
+		}
 	}
 
 }

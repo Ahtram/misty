@@ -54,13 +54,7 @@ func CellFeedToGSheetData(cellFeedXMLContent string) GSheetData {
 					returnGSheetData.StringTable[row][col] = v.Cell.Value
 				}
 			}
-
-			// fmt.Println("Add [" + string(v.Cell.Row) + ", " + string(v.Cell.Col) + "] " + v.Cell.Value)
 		}
-
-		// returnGSheetData.StringTable.
-		// fmt.Println("CellFeed [" + feed.Title + "] Row: " + feed.RowCount + " Col: " + feed.ColCount)
-		// fmt.Println("CellFeed Entry[0]: " + feed.Entries[0].Cell.Value + " Row: " + feed.Entries[0].Cell.Row + " Col: " + feed.Entries[0].Cell.Col)
 	}
 
 	return returnGSheetData
