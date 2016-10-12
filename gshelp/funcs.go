@@ -1,40 +1,107 @@
 package gshelp
 
 import "encoding/xml"
+import "fmt"
+import "strings"
+import "strconv"
 
-// ToFormattedString returns an output string just for print and debuging.
-func (sd GSheetData) ToFormattedString(columnSeperator string, rowSeperator string) string {
-
-	var returnString = ""
-	for i, row := range sd.stringTable {
-		for j, cell := range row {
-			returnString += cell
-			if j < len(row)-1 {
-				returnString = returnString + columnSeperator
-			}
-		}
-
-		if i < len(sd.stringTable)-1 {
-			returnString = returnString + rowSeperator
-		}
-	}
-
-	return returnString
+type cellFeedEntryCell struct {
+	XMLName xml.Name `xml:"cell"`
+	Value   string   `xml:",chardata"`
+	Row     string   `xml:"row,attr"`
+	Col     string   `xml:"col,attr"`
 }
 
-// ToDefaultString returns an output string just for print and debuging using default seperactors.
-func (sd GSheetData) ToDefaultString() string {
-	return sd.ToFormattedString(" ", "\n")
+type cellFeedEntry struct {
+	Cell cellFeedEntryCell `xml:"cell"`
+}
+
+type cellFeed struct {
+	XMLName  xml.Name        `xml:"feed"`
+	Title    string          `xml:"title"`
+	RowCount string          `xml:"rowCount"`
+	ColCount string          `xml:"colCount"`
+	Entries  []cellFeedEntry `xml:"entry"`
 }
 
 // CellFeedToGSheetData converts XML content to GSheetData object for us.
 func CellFeedToGSheetData(cellFeedXMLContent string) GSheetData {
+	// Parse the XML content.
+	feed := cellFeed{}
+	err := xml.Unmarshal([]byte(cellFeedXMLContent), &feed)
 	returnGSheetData := GSheetData{"", make([][]string, 0)}
+
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	} else {
+		tableHeight, _ := strconv.Atoi(feed.RowCount)
+		tableWidth, _ := strconv.Atoi(feed.ColCount)
+		returnGSheetData.Title = feed.Title
+		//Allocate slices.
+		for j := 0; j < tableHeight; j++ {
+			returnGSheetData.StringTable = append(returnGSheetData.StringTable, make([]string, tableWidth))
+		}
+
+		//Assign all exist strings into table.
+		for _, v := range feed.Entries {
+			row, _ := strconv.Atoi(v.Cell.Row)
+			col, _ := strconv.Atoi(v.Cell.Col)
+
+			if row < len(returnGSheetData.StringTable) {
+				if col < len(returnGSheetData.StringTable[row]) {
+					returnGSheetData.StringTable[row][col] = v.Cell.Value
+				}
+			}
+
+			// fmt.Println("Add [" + string(v.Cell.Row) + ", " + string(v.Cell.Col) + "] " + v.Cell.Value)
+		}
+
+		// returnGSheetData.StringTable.
+		// fmt.Println("CellFeed [" + feed.Title + "] Row: " + feed.RowCount + " Col: " + feed.ColCount)
+		// fmt.Println("CellFeed Entry[0]: " + feed.Entries[0].Cell.Value + " Row: " + feed.Entries[0].Cell.Row + " Col: " + feed.Entries[0].Cell.Col)
+	}
 
 	return returnGSheetData
 }
 
+type workSheetFeedEntryLink struct {
+	Rel  string `xml:"rel,attr"`
+	Href string `xml:"href,attr"`
+}
+
+type workSheetFeedEntry struct {
+	Title string                   `xml:"title"`
+	Links []workSheetFeedEntryLink `xml:"link"`
+}
+
+// WorkSheetFeed represent a simplified struct for a worksheet feed.
+type workSheetFeed struct {
+	XMLName     xml.Name             `xml:"feed"`
+	ID          string               `xml:"id"`
+	UpdatedTime string               `xml:"updated"`
+	Entries     []workSheetFeedEntry `xml:"entry"`
+}
+
 // WorkSheetFeedToCellFeedURLs converts worksheet feed XML content to cell feed URLs for us.
 func WorkSheetFeedToCellFeedURLs(worksheetFeedXMLContent string) []string {
-	return make([]string, 0)
+	// Parse the XML content.
+	feed := workSheetFeed{}
+	err := xml.Unmarshal([]byte(worksheetFeedXMLContent), &feed)
+	returnURLs := []string{}
+
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	} else {
+		for _, entry := range feed.Entries {
+			// fmt.Println("Got Tab: " + entry.Title)
+			for _, link := range entry.Links {
+				if strings.HasSuffix(link.Rel, "cellsfeed") {
+					// fmt.Println("Link: " + link.Href)
+					returnURLs = append(returnURLs, link.Href)
+				}
+			}
+		}
+	}
+
+	return returnURLs
 }

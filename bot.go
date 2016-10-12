@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"io/ioutil"
-
 	"gitlab.com/ahtram/misty/gshelp"
+
+	"io/ioutil"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -36,14 +36,37 @@ func ScanVars() {
 func SyncGSData() {
 	// Sync LStrings.
 	fmt.Print("Syncing String Data...")
-	loclizedStringXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
+	localizedStringWorkSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
+
+	// All tabs' GSeetData.
+	localizedStringGSheetData := []gshelp.GSheetData{}
+
 	if err != nil {
 		//Oh carp!
 		fmt.Println("[Error] " + err.Error())
 	} else {
 		fmt.Println("[Complete]")
 		// fmt.Println(loclizedStringXMLContent)
-		gshelp.WorkSheetFeedToCellFeedURLs(loclizedStringXMLContent)
+		URLs := gshelp.WorkSheetFeedToCellFeedURLs(localizedStringWorkSheetXMLContent)
+
+		// Get all cellfeeds.
+		for _, URL := range URLs {
+			loclizedStringCellXMLContent, err := fetchFeedXML(URL)
+			if err != nil {
+				fmt.Println("[Error] " + err.Error())
+			} else {
+				fmt.Println("[Tab Result]: ")
+				// fmt.Println(loclizedStringCellXMLContent)
+				tabData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
+				fmt.Println(tabData.ToDefaultString())
+				localizedStringGSheetData = append(localizedStringGSheetData, tabData)
+
+				// gSheetData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
+				// if gSheetData != nil {
+				// 	append(localizedStringGSheetData, gSheetData)
+				// }
+			}
+		}
 	}
 
 	// Sync Items.
