@@ -70,7 +70,7 @@ type workSheetFeedEntry struct {
 	Links []workSheetFeedEntryLink `xml:"link"`
 }
 
-// WorkSheetFeed represent a simplified struct for a worksheet feed.
+// workSheetFeed represent a simplified struct for a worksheet feed.
 type workSheetFeed struct {
 	XMLName     xml.Name             `xml:"feed"`
 	ID          string               `xml:"id"`

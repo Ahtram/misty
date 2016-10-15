@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strconv"
 	"net/http"
+	"strconv"
 
 	"gitlab.com/ahtram/misty/gshelp"
 
@@ -13,35 +13,42 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Variables used for command line parameters.
-var (
-	email    string
-	password string
-	token    string
-	botID    string
-	localizedStringGSheetData []gshelp.GSheetData
-)
-
 // Hard coded URLs
 const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1w0EKa3K7pNQHY5sAAlY6I-9wQgub9jAe2ozC_1_N7FU/public/full"
 
-// ScanVars will scan all vars with flag.
-func ScanVars() {
-	//Parse (read) parmeters.
-	flag.StringVar(&email, "e", "", "Account Email")
-	flag.StringVar(&password, "p", "", "Account Password")
-	flag.StringVar(&token, "t", "", "Account Token")
-	flag.Parse()
+// CommandParams store the parameters.
+type CommandParams struct {
+	email    string
+	password string
+	token    string
 }
 
-// SyncGSData will fetch all data sheet from our Google Drive.
-func SyncGSData() {
+// MistyCauldron is the primary data used by the bot.
+type MistyCauldron struct {
+	params                    CommandParams
+	botID                     string
+	localizedStringGSheetData []gshelp.GSheetData
+}
+
+// getVars will scan all vars with flag and return them.
+func getVars() CommandParams {
+	returnParams := CommandParams{}
+	//Parse (read) parmeters.
+	flag.StringVar(&returnParams.email, "e", "", "Account Email")
+	flag.StringVar(&returnParams.password, "p", "", "Account Password")
+	flag.StringVar(&returnParams.token, "t", "", "Account Token")
+	flag.Parse()
+	return returnParams
+}
+
+// syncGSData fetches all data sheet from our Google Drive and return them.
+func syncGSData() []gshelp.GSheetData {
 	// Sync LStrings.
 	fmt.Print("Syncing String Data...")
 	localizedStringWorkSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
 
 	// All tabs' GSeetData.
-	localizedStringGSheetData = []gshelp.GSheetData{}
+	data := []gshelp.GSheetData{}
 
 	if err != nil {
 		//Oh carp!
@@ -64,7 +71,7 @@ func SyncGSData() {
 				fmt.Println(tabData.ToDefaultString())
 
 				// Store in the golbal var.
-				localizedStringGSheetData = append(localizedStringGSheetData, tabData)
+				data = append(data, tabData)
 				fmt.Println("[Complete]")
 			}
 		}
@@ -74,12 +81,22 @@ func SyncGSData() {
 
 	// Sync Recipe.
 
+	return data
 }
 
-// StartBot will get the bot running.
+// StartBot gets the bot running.
 func StartBot() {
+	//The prime data object.
+	mistyCauldron := MistyCauldron{}
+
+	//Scan and store params.
+	mistyCauldron.params = getVars()
+
+	// Get all data from our Google sheets.
+	mistyCauldron.localizedStringGSheetData = syncGSData()
+
 	// Create a new Discord session using the provided login information.
-	session, err := discordgo.New(email, password, token)
+	session, err := discordgo.New(mistyCauldron.params.email, mistyCauldron.params.password, mistyCauldron.params.token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
@@ -92,12 +109,12 @@ func StartBot() {
 	}
 
 	// Store the account ID for later use.
-	botID = user.ID
+	mistyCauldron.botID = user.ID
 
-	fmt.Println("BotID: " + green(botID))
+	fmt.Println("BotID: " + green(mistyCauldron.botID))
 
 	// Register messageHandler as a callback for the messageHandler events.
-	session.AddHandler(messageHandler)
+	session.AddHandler(mistyCauldron.messageHandler)
 
 	// Open the websocket and begin listening.
 	err = session.Open()
@@ -111,30 +128,12 @@ func StartBot() {
 	<-make(chan struct{})
 }
 
-// fetchFeedXML read XML content from given URL.
-func fetchFeedXML(feedURL string) (XMLContent string, err error) {
-	response, httpErr := http.Get(feedURL)
-	if httpErr != nil {
-		return "", httpErr
-	}
-
-	defer response.Body.Close()
-
-	// Read the body with ioutil.
-	htmlData, ioErr := ioutil.ReadAll(response.Body)
-	if ioErr != nil {
-		return "", ioErr
-	}
-
-	return string(htmlData), nil
-}
-
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
-func messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
+func (cauldron MistyCauldron) messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
-	if messageCreate.Author.ID == botID {
+	if messageCreate.Author.ID == cauldron.botID {
 		return
 	}
 
@@ -169,13 +168,31 @@ func messageHandler(session *discordgo.Session, messageCreate *discordgo.Message
 	}
 
 	if messageCreate.Content == "嚇死你!" {
-		if len(localizedStringGSheetData) > 0 {
+		if len(cauldron.localizedStringGSheetData) > 0 {
 			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, ":pig:")
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, localizedStringGSheetData[0].ToDefaultString())
-		}else {
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "多語系字串tab數量:"+strconv.Itoa(len(cauldron.localizedStringGSheetData)))
+		} else {
 			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "嚇不倒我的:yum:")
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "len(localizedStringGSheetData): " + strconv.Itoa(len(localizedStringGSheetData)))
+			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "len(localizedStringGSheetData): "+strconv.Itoa(len(cauldron.localizedStringGSheetData)))
 		}
 	}
 
+}
+
+// fetchFeedXML read XML content from given URL.
+func fetchFeedXML(feedURL string) (XMLContent string, err error) {
+	response, httpErr := http.Get(feedURL)
+	if httpErr != nil {
+		return "", httpErr
+	}
+
+	defer response.Body.Close()
+
+	// Read the body with ioutil.
+	htmlData, ioErr := ioutil.ReadAll(response.Body)
+	if ioErr != nil {
+		return "", ioErr
+	}
+
+	return string(htmlData), nil
 }

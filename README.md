@@ -8,6 +8,7 @@ This is the private robot for projectA discord channel written by Golang.
 
 [Todo]
 讓 bot 可以接受 misty 這個關鍵字作為命令開頭。（只對 misty 開頭的字串做判斷處理，這邊得先做出字串用空白分割)
+讀取設定sheet，來決定接收命令時要回覆什麼特定字串。(一樣用 Google Sheet 定義)
 
 --
 

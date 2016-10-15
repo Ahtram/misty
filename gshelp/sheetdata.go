@@ -1,6 +1,6 @@
 package gshelp
 
-// A GSheetData represent one tab of sheet in your Google sheet doc.
+// GSheetData represent one tab of sheet in your Google sheet doc.
 type GSheetData struct {
 	Title       string
 	StringTable [][]string
