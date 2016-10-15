@@ -16,25 +16,52 @@ import (
 
 // Hard coded URLs
 const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1w0EKa3K7pNQHY5sAAlY6I-9wQgub9jAe2ozC_1_N7FU/public/full"
-const commandPrefix = "misty "
+const commandPrefix = "misty"
+const guideReply = "Use [misty help] to get help info! :laughing:"
 
-// CommandParams store the parameters.
-type CommandParams struct {
+// ExeParams store the parameters.
+type ExeParams struct {
 	email    string
 	password string
 	token    string
 }
 
+// CmdFunc is the function type for misty's commands.
+type CmdFunc func(args []string) string
+
 // Misty is the primary data used by the bot.
 type Misty struct {
-	params                    CommandParams
+	params                    ExeParams
 	botID                     string
 	localizedStringGSheetData []gshelp.GSheetData
+	cmdFuncs                  map[string]CmdFunc
 }
+
+func (misty *Misty) init() {
+	misty.cmdFuncs = make(map[string]CmdFunc)
+	misty.cmdFuncs["help"] = misty.cmdHelp
+	misty.cmdFuncs["lstring"] = misty.cmdLString
+
+	fmt.Println("init done. Cmd count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
+
+	// Add new built-in cmd func below.
+}
+
+//=========== Define all build-in cmd process function here ===========
+
+func (misty *Misty) cmdHelp(args []string) string {
+	return "This is help message"
+}
+
+func (misty *Misty) cmdLString(args []string) string {
+	return "This is lstring message"
+}
+
+//=====================================================================
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
-func (misty Misty) messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
+func (misty *Misty) messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
 	if messageCreate.Author.ID == misty.botID {
@@ -48,16 +75,47 @@ func (misty Misty) messageHandler(session *discordgo.Session, messageCreate *dis
 	}
 }
 
-func (misty Misty) responseMessage(message string) string {
-	if strings.HasPrefix(message, commandPrefix) {
-		return strings.TrimPrefix(message, commandPrefix)
+// responseMessage return a suitable string as response message after decision.
+// An empty string will be returned if not suitable reply found.
+func (misty *Misty) responseMessage(message string) string {
+	if strings.HasPrefix(message, commandPrefix+" ") {
+		// Trim the prefix to get the message content.
+		messageContent := strings.TrimPrefix(message, commandPrefix+" ")
+
+		// get command and argument.(words) They should be devided by an empty character.
+		words := strings.Split(messageContent, " ")
+
+		return misty.responseCommand(words)
+	} else if message == commandPrefix {
+		return guideReply
 	}
+
+	// Not response.
+	return ""
+}
+
+// responseCommand returns the command result by input wors.
+// An empty string will be returned if this is not a legal command.
+func (misty *Misty) responseCommand(words []string) string {
+	if len(words) > 0 {
+		// This maybe a command with arguments.
+		//Check if misty actually has this command.
+		if _, exist := misty.cmdFuncs[words[0]]; exist {
+			args := words[1:]
+			// Call the cmd func and input args.
+			return misty.cmdFuncs[words[0]](args)
+		}
+
+		return "I don't know what you mean [" + words[0] + "]. " + guideReply
+	}
+
+	// Not response.
 	return ""
 }
 
 // getVars will scan all vars with flag and return them.
-func getVars() CommandParams {
-	returnParams := CommandParams{}
+func getVars() ExeParams {
+	returnParams := ExeParams{}
 	//Parse (read) parmeters.
 	flag.StringVar(&returnParams.email, "e", "", "Account Email")
 	flag.StringVar(&returnParams.password, "p", "", "Account Password")
@@ -112,6 +170,8 @@ func syncGSData() []gshelp.GSheetData {
 func StartBot() {
 	//The prime data object.
 	misty := Misty{}
+	//This will initial the commands for misty.
+	misty.init()
 
 	//Scan and store params.
 	misty.params = getVars()
