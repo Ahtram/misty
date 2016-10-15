@@ -6,6 +6,11 @@ This is the private robot for projectA discord channel written by Golang.
 3. 支援多語系(繁簡英日)。
 4. 其他功能想到的話可以後續再繼續擴充。 
 
+[Todo]
+讓 bot 可以接受 misty 這個關鍵字作為命令開頭。（只對 misty 開頭的字串做判斷處理，這邊得先做出字串用空白分割)
+
+--
+
 Below is just some random note text for me to remember things that's not so important so please ignore it.
 
 Server 連線設定教學
