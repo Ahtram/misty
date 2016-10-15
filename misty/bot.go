@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gitlab.com/ahtram/misty/gshelp"
 
@@ -15,6 +16,7 @@ import (
 
 // Hard coded URLs
 const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1w0EKa3K7pNQHY5sAAlY6I-9wQgub9jAe2ozC_1_N7FU/public/full"
+const commandPrefix = "misty "
 
 // CommandParams store the parameters.
 type CommandParams struct {
@@ -23,11 +25,34 @@ type CommandParams struct {
 	token    string
 }
 
-// MistyCauldron is the primary data used by the bot.
-type MistyCauldron struct {
+// Misty is the primary data used by the bot.
+type Misty struct {
 	params                    CommandParams
 	botID                     string
 	localizedStringGSheetData []gshelp.GSheetData
+}
+
+// This function will be called (due to AddHandler above) every time a new
+// message is created on any channel that the autenticated bot has access to.
+func (misty Misty) messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
+
+	// Ignore all messages created by the bot itself
+	if messageCreate.Author.ID == misty.botID {
+		return
+	}
+
+	// Try response the message.
+	reply := misty.responseMessage(messageCreate.Content)
+	if reply != "" {
+		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, reply)
+	}
+}
+
+func (misty Misty) responseMessage(message string) string {
+	if strings.HasPrefix(message, commandPrefix) {
+		return strings.TrimPrefix(message, commandPrefix)
+	}
+	return ""
 }
 
 // getVars will scan all vars with flag and return them.
@@ -67,8 +92,7 @@ func syncGSData() []gshelp.GSheetData {
 			} else {
 				tabData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
 
-				// fmt.Println("[Tab Result]: ")
-				fmt.Println(tabData.ToDefaultString())
+				// fmt.Println(tabData.ToDefaultString())
 
 				// Store in the golbal var.
 				data = append(data, tabData)
@@ -87,16 +111,16 @@ func syncGSData() []gshelp.GSheetData {
 // StartBot gets the bot running.
 func StartBot() {
 	//The prime data object.
-	mistyCauldron := MistyCauldron{}
+	misty := Misty{}
 
 	//Scan and store params.
-	mistyCauldron.params = getVars()
+	misty.params = getVars()
 
 	// Get all data from our Google sheets.
-	mistyCauldron.localizedStringGSheetData = syncGSData()
+	misty.localizedStringGSheetData = syncGSData()
 
 	// Create a new Discord session using the provided login information.
-	session, err := discordgo.New(mistyCauldron.params.email, mistyCauldron.params.password, mistyCauldron.params.token)
+	session, err := discordgo.New(misty.params.email, misty.params.password, misty.params.token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
@@ -109,12 +133,12 @@ func StartBot() {
 	}
 
 	// Store the account ID for later use.
-	mistyCauldron.botID = user.ID
+	misty.botID = user.ID
 
-	fmt.Println("BotID: " + green(mistyCauldron.botID))
+	fmt.Println("BotID: " + green(misty.botID))
 
 	// Register messageHandler as a callback for the messageHandler events.
-	session.AddHandler(mistyCauldron.messageHandler)
+	session.AddHandler(misty.messageHandler)
 
 	// Open the websocket and begin listening.
 	err = session.Open()
@@ -126,57 +150,6 @@ func StartBot() {
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
-}
-
-// This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the autenticated bot has access to.
-func (cauldron MistyCauldron) messageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
-
-	// Ignore all messages created by the bot itself
-	if messageCreate.Author.ID == cauldron.botID {
-		return
-	}
-
-	// If the message is "ping" reply with "Pong!"
-	if messageCreate.Content == "ping" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "Pong!")
-	}
-
-	// If the message is "pong" reply with "Ping!"
-	if messageCreate.Content == "pong" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "Ping!")
-	}
-
-	if messageCreate.Content == "misty" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "蝦? 叫我喔?")
-	}
-
-	if messageCreate.Content == "今天幾點開會?" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "9點啦!")
-	}
-
-	if messageCreate.Content == "吃飽沒?" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "還沒啦!")
-	}
-
-	if messageCreate.Content == "開會了" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "https://hangouts.google.com/call/wpi5vlbz6bcc5bm7nromkueyrae")
-	}
-
-	if messageCreate.Content == "?" {
-		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "?")
-	}
-
-	if messageCreate.Content == "嚇死你!" {
-		if len(cauldron.localizedStringGSheetData) > 0 {
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, ":pig:")
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "多語系字串tab數量:"+strconv.Itoa(len(cauldron.localizedStringGSheetData)))
-		} else {
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "嚇不倒我的:yum:")
-			_, _ = session.ChannelMessageSend(messageCreate.ChannelID, "len(localizedStringGSheetData): "+strconv.Itoa(len(cauldron.localizedStringGSheetData)))
-		}
-	}
-
 }
 
 // fetchFeedXML read XML content from given URL.
