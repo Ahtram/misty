@@ -19,6 +19,22 @@ const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/works
 const commandPrefix = "misty"
 const guideReply = "Use [misty help] to get help info! :laughing:"
 
+// Lang is language enum.
+type Lang int
+
+const (
+	cht Lang = iota
+	chs
+	en
+	jpn
+)
+
+// LangTypeCount is the type count of supported languages.
+const LangTypeCount = 4
+
+// LangName stores all language name.
+var LangName = []string{"cht", "chs", "en", "jpn"}
+
 // ExeParams store the parameters.
 type ExeParams struct {
 	email    string
@@ -29,12 +45,13 @@ type ExeParams struct {
 // CmdFunc is the function type for misty's commands.
 type CmdFunc func(args []string) string
 
-// Misty is the primary data used by the bot.
+// Misty is the primary data used by misty. It's a cheap db repacement.
 type Misty struct {
-	params                    ExeParams
-	botID                     string
-	localizedStringGSheetData []gshelp.GSheetData
-	cmdFuncs                  map[string]CmdFunc
+	params   ExeParams
+	botID    string
+	cmdFuncs map[string]CmdFunc
+	lstrings map[string][]string
+	// localizedStringGSheetData []gshelp.GSheetData
 }
 
 func (misty *Misty) init() {
@@ -50,11 +67,36 @@ func (misty *Misty) init() {
 //=========== Define all build-in cmd process function here ===========
 
 func (misty *Misty) cmdHelp(args []string) string {
-	return "This is help message"
+	helpMessage := ":secret:"
+	helpMessage = helpMessage + " Try these keywords on me: "
+	for k := range misty.cmdFuncs {
+		if k != "help" {
+			helpMessage = helpMessage + " [" + k + "]"
+		}
+	}
+	helpMessage = helpMessage + " :secret:"
+	return helpMessage
 }
 
 func (misty *Misty) cmdLString(args []string) string {
-	return "This is lstring message"
+	if len(args) > 0 {
+		// Check if the ID exist.
+		content, exist := misty.lstrings[args[0]]
+		if exist {
+			result := "Result: " + fmt.Sprint("\n")
+			for i := 0; i < LangTypeCount; i++ {
+				// Add a language tag.
+				if i < len(LangName) {
+					result = result + LangName[i]
+				}
+				result = result + " [" + content[i] + "]" + fmt.Sprint("\n")
+			}
+			return result
+		}
+		return "There is no such string in game [" + args[0] + "]. :weary:"
+	}
+	// Show info message if there's no args.
+	return "Use [misty lstring <StringID>] to query an in-game string."
 }
 
 //=====================================================================
@@ -124,21 +166,20 @@ func getVars() ExeParams {
 	return returnParams
 }
 
-// syncGSData fetches all data sheet from our Google Drive and return them.
-func syncGSData() []gshelp.GSheetData {
+// getLStrings fetches all data sheet from our Google Drive and return them.
+func getLStrings() map[string][]string {
 	// Sync LStrings.
-	fmt.Print("Syncing String Data...")
+	fmt.Print("Syncing LString Data...")
 	localizedStringWorkSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
 
 	// All tabs' GSeetData.
-	data := []gshelp.GSheetData{}
+	sheetData := []gshelp.GSheetData{}
 
 	if err != nil {
 		//Oh carp!
 		fmt.Println("[Error] " + err.Error())
 	} else {
 		fmt.Println("[Complete]")
-		// fmt.Println(loclizedStringXMLContent)
 		URLs := gshelp.WorkSheetFeedToCellFeedURLs(localizedStringWorkSheetXMLContent)
 
 		// Get all cellfeeds.
@@ -150,20 +191,31 @@ func syncGSData() []gshelp.GSheetData {
 			} else {
 				tabData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
 
-				// fmt.Println(tabData.ToDefaultString())
-
 				// Store in the golbal var.
-				data = append(data, tabData)
+				sheetData = append(sheetData, tabData)
 				fmt.Println("[Complete]")
 			}
 		}
 	}
 
-	// Sync Items.
+	// Form the returned map.
+	lstrings := make(map[string][]string)
 
-	// Sync Recipe.
+	// Iterate through tabs.
+	for _, sheetTab := range sheetData {
+		// Iterate through rows.
+		for _, row := range sheetTab.StringTable {
+			// Check if each row has an ID.
+			if len(row) > 0 {
+				if row[0] != "" {
+					// Add this row.
+					lstrings[row[0]] = row[1:5]
+				}
+			}
+		}
+	}
 
-	return data
+	return lstrings
 }
 
 // StartBot gets the bot running.
@@ -177,7 +229,7 @@ func StartBot() {
 	misty.params = getVars()
 
 	// Get all data from our Google sheets.
-	misty.localizedStringGSheetData = syncGSData()
+	misty.lstrings = getLStrings()
 
 	// Create a new Discord session using the provided login information.
 	session, err := discordgo.New(misty.params.email, misty.params.password, misty.params.token)
