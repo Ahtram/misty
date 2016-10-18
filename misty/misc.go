@@ -5,7 +5,7 @@ import "github.com/fatih/color"
 
 //Version number and program name define.
 const programName = "Misty"
-const version = "0.0.0.2"
+const version = "0.0.0.3"
 
 //Color defines.
 var mag = color.New(color.FgHiMagenta).SprintFunc()

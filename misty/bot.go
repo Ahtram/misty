@@ -16,6 +16,7 @@ import (
 
 // Hard coded URLs
 const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1w0EKa3K7pNQHY5sAAlY6I-9wQgub9jAe2ozC_1_N7FU/public/full"
+const literalCommandSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1haLbQuE7TtF79_J2XLbzFRYbAkfGRCmrXxwdbJ0d724/public/full"
 const commandPrefix = "misty"
 const guideReply = "Use [misty help] to get help info! :laughing:"
 
@@ -47,39 +48,55 @@ type CmdFunc func(args []string) string
 
 // Misty is the primary data used by misty. It's a cheap db repacement.
 type Misty struct {
-	params   ExeParams
-	botID    string
+	params ExeParams
+	botID  string
+	// Bunit-in commands.
 	cmdFuncs map[string]CmdFunc
+	// This is the command name index. We need this to properly order the [help] command's output.
+	cmdNames []string
+	// User defined custom command return strings.
+	literalCommands map[string]string
+	// Localized string data from TET.
 	lstrings map[string][]string
-	// localizedStringGSheetData []gshelp.GSheetData
 }
 
-func (misty *Misty) init() {
+func (misty *Misty) initCmd() {
 	misty.cmdFuncs = make(map[string]CmdFunc)
 	misty.cmdFuncs["help"] = misty.cmdHelp
+	misty.cmdNames = append(misty.cmdNames, "help")
 	misty.cmdFuncs["lstring"] = misty.cmdLString
-
-	fmt.Println("init done. Cmd count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
-
+	misty.cmdNames = append(misty.cmdNames, "lstring")
 	// Add new built-in cmd func below.
+
+	// Add all user define literal commands.
+	for key := range misty.literalCommands {
+		if _, exist := misty.cmdFuncs[key]; !exist {
+			// cmdLiteral will query literalCommands for response.
+			misty.cmdFuncs[key] = misty.cmdLiteral
+			misty.cmdNames = append(misty.cmdNames, key)
+		}
+	}
+
+	fmt.Println("initCmd done. Cmd count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
 }
 
 //=========== Define all build-in cmd process function here ===========
 
-func (misty *Misty) cmdHelp(args []string) string {
+func (misty *Misty) cmdHelp(words []string) string {
 	helpMessage := ":secret:"
 	helpMessage = helpMessage + " Try these keywords on me: "
-	for k := range misty.cmdFuncs {
-		if k != "help" {
-			helpMessage = helpMessage + " [" + k + "]"
+	for _, value := range misty.cmdNames {
+		if value != "help" {
+			helpMessage = helpMessage + " [" + value + "]"
 		}
 	}
 	helpMessage = helpMessage + " :secret:"
 	return helpMessage
 }
 
-func (misty *Misty) cmdLString(args []string) string {
-	if len(args) > 0 {
+func (misty *Misty) cmdLString(words []string) string {
+	if len(words) > 0 {
+		args := words[1:]
 		// Check if the ID exist.
 		content, exist := misty.lstrings[args[0]]
 		if exist {
@@ -97,6 +114,15 @@ func (misty *Misty) cmdLString(args []string) string {
 	}
 	// Show info message if there's no args.
 	return "Use [misty lstring <StringID>] to query an in-game string."
+}
+
+// cmdLiteral query the user define reply string and return it.
+func (misty *Misty) cmdLiteral(words []string) string {
+	if len(words) > 0 {
+		cmd := words[0]
+		return misty.literalCommands[cmd]
+	}
+	return "&^*(&^%$*&()*&$%#@))(*&^%$#@!!!!!!!)"
 }
 
 //=====================================================================
@@ -143,9 +169,9 @@ func (misty *Misty) responseCommand(words []string) string {
 		// This maybe a command with arguments.
 		//Check if misty actually has this command.
 		if _, exist := misty.cmdFuncs[words[0]]; exist {
-			args := words[1:]
-			// Call the cmd func and input args.
-			return misty.cmdFuncs[words[0]](args)
+			// args := words[1:]
+			// Call the cmd func and input words.
+			return misty.cmdFuncs[words[0]](words)
 		}
 
 		return "I don't know what you mean [" + words[0] + "]. " + guideReply
@@ -166,11 +192,11 @@ func getVars() ExeParams {
 	return returnParams
 }
 
-// getLStrings fetches all data sheet from our Google Drive and return them.
+// getLStrings fetches lstrings from our Google Drive and return them.
 func getLStrings() map[string][]string {
 	// Sync LStrings.
 	fmt.Print("Syncing LString Data...")
-	localizedStringWorkSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
+	workSheetXMLContent, err := fetchFeedXML(localizedStringSheetFeedURL)
 
 	// All tabs' GSeetData.
 	sheetData := []gshelp.GSheetData{}
@@ -180,16 +206,16 @@ func getLStrings() map[string][]string {
 		fmt.Println("[Error] " + err.Error())
 	} else {
 		fmt.Println("[Complete]")
-		URLs := gshelp.WorkSheetFeedToCellFeedURLs(localizedStringWorkSheetXMLContent)
+		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
 
 		// Get all cellfeeds.
 		for i, URL := range URLs {
 			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
-			loclizedStringCellXMLContent, err := fetchFeedXML(URL)
+			cellXMLContent, err := fetchFeedXML(URL)
 			if err != nil {
 				fmt.Println("[Error] " + err.Error())
 			} else {
-				tabData := gshelp.CellFeedToGSheetData(loclizedStringCellXMLContent)
+				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
 
 				// Store in the golbal var.
 				sheetData = append(sheetData, tabData)
@@ -218,18 +244,73 @@ func getLStrings() map[string][]string {
 	return lstrings
 }
 
+func getLiteralCommands() map[string]string {
+	// Sync LStrings.
+	fmt.Print("Syncing LiteralCommands Data...")
+	workSheetXMLContent, err := fetchFeedXML(literalCommandSheetFeedURL)
+
+	// All tabs' GSeetData.
+	sheetData := []gshelp.GSheetData{}
+
+	if err != nil {
+		//Oh carp!
+		fmt.Println("[Error] " + err.Error())
+	} else {
+		fmt.Println("[Complete]")
+		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
+
+		// Get all cellfeeds.
+		for i, URL := range URLs {
+			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
+			cellXMLContent, err := fetchFeedXML(URL)
+			if err != nil {
+				fmt.Println("[Error] " + err.Error())
+			} else {
+				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
+
+				// Store in the golbal var.
+				sheetData = append(sheetData, tabData)
+				fmt.Println("[Complete]")
+			}
+		}
+	}
+
+	// Form the returned map.
+	literalCommands := make(map[string]string)
+
+	// Iterate through tabs.
+	for _, sheetTab := range sheetData {
+		// Iterate through rows.
+		for _, row := range sheetTab.StringTable {
+			// Check if each row has an ID.
+			if len(row) > 1 {
+				if row[0] != "" && row[1] != "" {
+					// Add this row.
+					literalCommands[row[0]] = row[1]
+				}
+			}
+		}
+	}
+
+	return literalCommands
+}
+
 // StartBot gets the bot running.
 func StartBot() {
 	//The prime data object.
 	misty := Misty{}
-	//This will initial the commands for misty.
-	misty.init()
 
 	//Scan and store params.
 	misty.params = getVars()
 
 	// Get all data from our Google sheets.
 	misty.lstrings = getLStrings()
+
+	// Get all literalCommand from Google sheets.
+	misty.literalCommands = getLiteralCommands()
+
+	//This will initial the commands for misty. (should do this ATFER all sheetData is synced)
+	misty.initCmd()
 
 	// Create a new Discord session using the provided login information.
 	session, err := discordgo.New(misty.params.email, misty.params.password, misty.params.token)

@@ -45,3 +45,6 @@ or
 
 使用 tmux 指令來背景常駐運作 misty
 tmux 教學: https://gist.github.com/MohamedAlaa/2961058
+
+擴充命令用 Google Sheet
+https://docs.google.com/spreadsheets/d/1haLbQuE7TtF79_J2XLbzFRYbAkfGRCmrXxwdbJ0d724/edit
