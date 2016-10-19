@@ -97,20 +97,23 @@ func (misty *Misty) cmdHelp(words []string) string {
 func (misty *Misty) cmdLString(words []string) string {
 	if len(words) > 0 {
 		args := words[1:]
-		// Check if the ID exist.
-		content, exist := misty.lstrings[args[0]]
-		if exist {
-			result := "Result: " + fmt.Sprint("\n")
-			for i := 0; i < LangTypeCount; i++ {
-				// Add a language tag.
-				if i < len(LangName) {
-					result = result + LangName[i]
+		if len(args) > 0 {
+			// Check if the ID exist.
+			content, exist := misty.lstrings[args[0]]
+			if exist {
+				result := "Result: " + fmt.Sprint("\n")
+				for i := 0; i < LangTypeCount; i++ {
+					// Add a language tag.
+					if i < len(LangName) {
+						result = result + LangName[i]
+					}
+					result = result + " [" + content[i] + "]" + fmt.Sprint("\n")
 				}
-				result = result + " [" + content[i] + "]" + fmt.Sprint("\n")
+				return result
 			}
-			return result
+			return "There is no such string in game [" + args[0] + "]. :weary:"
 		}
-		return "There is no such string in game [" + args[0] + "]. :weary:"
+		return "Use [misty lstring <StringID>] to query an in-game string."	
 	}
 	// Show info message if there's no args.
 	return "Use [misty lstring <StringID>] to query an in-game string."
