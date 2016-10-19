@@ -138,6 +138,7 @@ func (misty *Misty) messageHandler(session *discordgo.Session, messageCreate *di
 
 	// Try response the message.
 	reply := misty.responseMessage(messageCreate.Content)
+
 	if reply != "" {
 		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, reply)
 	}
