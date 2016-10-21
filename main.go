@@ -20,7 +20,7 @@ func main() {
 // StartBot gets the bot running.
 func StartBot() error {
 	//The prime data object.
-	bot := misty.Misty{}
+	bot := misty.Misty{Updating: false}
 	bot.GetVars()
 	bot.Update()
 
@@ -53,6 +53,7 @@ func StartBot() error {
 		return err
 	}
 
+	session.ChannelMessageSend(misty.AsylumChannelID, "Misty is here! Hello world! :smile::smile::smile:")
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})

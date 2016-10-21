@@ -17,6 +17,9 @@ const literalCommandSheetFeedURL = "https://spreadsheets.google.com/feeds/worksh
 const commandPrefix = "misty"
 const guideReply = "Use [misty help] to get help info! :laughing:"
 
+// A test channel ID.
+const AsylumChannelID = "210805901269925888"
+
 // CmdFunc is the function type for misty's commands.
 type CmdFunc func(args []string) string
 
@@ -32,6 +35,8 @@ type Misty struct {
 	literalCommands map[string]string
 	// Localized string data from TET.
 	lstrings map[string][]string
+	// Is updating something from the sheet.
+	Updating bool
 }
 
 //=========== Define all build-in cmd process function here ===========
@@ -84,7 +89,7 @@ func (misty *Misty) cmdLiteral(words []string) string {
 
 //=====================================================================
 
-// This function will be called (due to AddHandler above) every time a new
+// MessageHandler be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
 func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *discordgo.MessageCreate) {
 
@@ -97,6 +102,7 @@ func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *di
 	reply := misty.responseMessage(messageCreate.Content)
 
 	if reply != "" {
+		// fmt.Println("ChannelMessageSend ChannelID: " + messageCreate.ChannelID)
 		_, _ = session.ChannelMessageSend(messageCreate.ChannelID, reply)
 	}
 }
@@ -139,7 +145,7 @@ func (misty *Misty) responseCommand(words []string) string {
 	return ""
 }
 
-// getVars will scan all vars with flag and return them.
+// GetVars will scan all vars with flag and return them.
 func (misty *Misty) GetVars() {
 	//Parse (read) parmeters.
 	flag.StringVar(&misty.Params.Email, "e", "", "Account Email")
@@ -148,11 +154,15 @@ func (misty *Misty) GetVars() {
 	flag.Parse()
 }
 
-// update do all data sync with sheet files on our Google Drive. And refresh anything needed.
+// Update do all data sync with sheet files on our Google Drive. And refresh anything needed.
 func (misty *Misty) Update() {
-	misty.syncLStrings()
-	misty.syncLiteralCommands()
-	misty.updateCommands()
+	if !misty.Updating {
+		misty.Updating = true
+		misty.syncLStrings()
+		misty.syncLiteralCommands()
+		misty.updateCommands()
+		misty.Updating = false
+	}
 }
 
 // syncLStrings fetches lstrings from our Google Drive and return them.
