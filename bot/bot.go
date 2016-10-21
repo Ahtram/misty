@@ -1,4 +1,4 @@
-package misty
+package bot
 
 import (
 	"flag"
