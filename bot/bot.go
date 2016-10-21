@@ -17,7 +17,7 @@ const literalCommandSheetFeedURL = "https://spreadsheets.google.com/feeds/worksh
 const commandPrefix = "misty"
 const guideReply = "Use [misty help] to get help info! :laughing:"
 
-// A test channel ID.
+//AsylumChannelID define the test channelID in our server.
 const AsylumChannelID = "210805901269925888"
 
 // CmdFunc is the function type for misty's commands.
@@ -78,6 +78,11 @@ func (misty *Misty) cmdLString(words []string) string {
 	return "Use [misty lstring <StringID>] to query an in-game string."
 }
 
+func (misty *Misty) cmdUpdate(words []string) string {
+	go misty.Update()
+	return "Roger that! Starting the update..."
+}
+
 // cmdLiteral query the user define reply string and return it.
 func (misty *Misty) cmdLiteral(words []string) string {
 	if len(words) > 0 {
@@ -111,17 +116,22 @@ func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *di
 // An empty string will be returned if not suitable reply found.
 func (misty *Misty) responseMessage(message string) string {
 	if strings.HasPrefix(message, commandPrefix+" ") {
-		// Trim the prefix to get the message content.
-		messageContent := strings.TrimPrefix(message, commandPrefix+" ")
+		//Check if misty is updating anything
+		if !misty.Updating {
+			//Could response commands now.
+			// Trim the prefix to get the message content.
+			messageContent := strings.TrimPrefix(message, commandPrefix+" ")
 
-		// get command and argument.(words) They should be devided by an empty character.
-		words := strings.Split(messageContent, " ")
+			// get command and argument.(words) They should be devided by an empty character.
+			words := strings.Split(messageContent, " ")
 
-		return misty.responseCommand(words)
+			return misty.responseCommand(words)
+		}
+
+		return "I'm a little right now. Talk to me later. :smile: (Misty is updating data)"
 	} else if message == commandPrefix {
 		return guideReply
 	}
-
 	// Not response.
 	return ""
 }
@@ -266,11 +276,15 @@ func (misty *Misty) syncLiteralCommands() {
 
 func (misty *Misty) updateCommands() {
 	misty.cmdFuncs = make(map[string]CmdFunc)
+	misty.cmdNames = []string{}
+
 	misty.cmdFuncs["help"] = misty.cmdHelp
 	misty.cmdNames = append(misty.cmdNames, "help")
 	misty.cmdFuncs["lstring"] = misty.cmdLString
 	misty.cmdNames = append(misty.cmdNames, "lstring")
-	// Add new built-in cmd func below.
+	misty.cmdFuncs["update"] = misty.cmdUpdate
+	misty.cmdNames = append(misty.cmdNames, "update")
+	// Add new built-in cmd func here...
 
 	// Add all user define literal commands.
 	for key := range misty.literalCommands {

@@ -12,10 +12,13 @@ import (
 const programName = "Misty"
 const version = "0.0.0.4"
 
-// Color defines.
+// Mag = Magenta Color 
 var Mag = color.New(color.FgHiMagenta).SprintFunc()
+// Yellow = Yellow Color
 var Yellow = color.New(color.FgHiYellow).SprintFunc()
+// Cyan = Cyan Color
 var Cyan = color.New(color.FgHiCyan).SprintFunc()
+// Green = Green Color
 var Green = color.New(color.FgHiGreen).SprintFunc()
 
 // Lang is language enum.
