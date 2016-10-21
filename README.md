@@ -39,9 +39,9 @@ https://discordapp.com/developers/applications/me/231105148074721280
 https://discordapp.com/oauth2/authorize?client_id=231105148074721280&scope=bot&permissions=0
 
 //執行指令
-./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.CtZU3A.vxmIdJICDZizVjAmM8908VrAD5c"
+./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
 or
-./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.CtZU3A.vxmIdJICDZizVjAmM8908VrAD5c"
+./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
 or 
 ./misty -e [email] -p [password]
 
