@@ -21,12 +21,13 @@ const guideReply = "Use [misty help] to get help info! :laughing:"
 const AsylumChannelID = "210805901269925888"
 
 // CmdFunc is the function type for misty's commands.
-type CmdFunc func(args []string) string
+type CmdFunc func(words []string, channelID string) string
 
 // Misty is the primary data used by misty. It's a cheap db repacement.
 type Misty struct {
-	Params ExeParams
-	BotID  string
+	Params  ExeParams
+	session *discordgo.Session
+	BotID   string
 	// Bunit-in commands.
 	cmdFuncs map[string]CmdFunc
 	// This is the command name index. We need this to properly order the [help] command's output.
@@ -39,9 +40,55 @@ type Misty struct {
 	Updating bool
 }
 
+// Start the bot.
+func (misty *Misty) Start() error {
+	// Get all commandline vars.
+	misty.GetVars()
+
+	// Update data.
+	misty.Update(AsylumChannelID)
+
+	// Create a new Discord session using the provided login information.
+	var err error
+	misty.session, err = discordgo.New(misty.Params.Email, misty.Params.Password, misty.Params.Token)
+	if err != nil {
+		fmt.Println("error creating Discord session,", err)
+		return err
+	}
+
+	// Get the account information.
+	user, err := misty.session.User("@me")
+	if err != nil {
+		fmt.Println("error obtaining account details,", err)
+		return err
+	}
+
+	// Store the account ID for later use.
+	misty.BotID = user.ID
+
+	fmt.Println("BotID: " + Green(misty.BotID))
+
+	// Register messageHandler as a callback for the messageHandler events.
+	misty.session.AddHandler(misty.MessageHandler)
+
+	// Open the websocket and begin listening.
+	err = misty.session.Open()
+	if err != nil {
+		fmt.Println("error opening connection,", err)
+		return err
+	}
+
+	misty.session.ChannelMessageSend(AsylumChannelID, "Misty is here! Hello world! :smile::smile::smile:")
+	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	// Simple way to keep program running until CTRL-C is pressed.
+	<-make(chan struct{})
+
+	return nil
+}
+
 //=========== Define all build-in cmd process function here ===========
 
-func (misty *Misty) cmdHelp(words []string) string {
+func (misty *Misty) cmdHelp(words []string, channelID string) string {
 	helpMessage := ":secret:"
 	helpMessage = helpMessage + " Try these keywords on me: "
 	for _, value := range misty.cmdNames {
@@ -53,7 +100,7 @@ func (misty *Misty) cmdHelp(words []string) string {
 	return helpMessage
 }
 
-func (misty *Misty) cmdLString(words []string) string {
+func (misty *Misty) cmdLString(words []string, channelID string) string {
 	if len(words) > 0 {
 		args := words[1:]
 		if len(args) > 0 {
@@ -78,13 +125,13 @@ func (misty *Misty) cmdLString(words []string) string {
 	return "Use [misty lstring <StringID>] to query an in-game string."
 }
 
-func (misty *Misty) cmdUpdate(words []string) string {
-	go misty.Update()
+func (misty *Misty) cmdUpdate(words []string, channelID string) string {
+	go misty.Update(channelID)
 	return "Roger that! Starting the update..."
 }
 
 // cmdLiteral query the user define reply string and return it.
-func (misty *Misty) cmdLiteral(words []string) string {
+func (misty *Misty) cmdLiteral(words []string, channelID string) string {
 	if len(words) > 0 {
 		cmd := words[0]
 		return misty.literalCommands[cmd]
@@ -93,6 +140,30 @@ func (misty *Misty) cmdLiteral(words []string) string {
 }
 
 //=====================================================================
+
+func (misty *Misty) updateCommands() {
+	misty.cmdFuncs = make(map[string]CmdFunc)
+	misty.cmdNames = []string{}
+
+	misty.cmdFuncs["help"] = misty.cmdHelp
+	misty.cmdNames = append(misty.cmdNames, "help")
+	misty.cmdFuncs["lstring"] = misty.cmdLString
+	misty.cmdNames = append(misty.cmdNames, "lstring")
+	misty.cmdFuncs["update"] = misty.cmdUpdate
+	misty.cmdNames = append(misty.cmdNames, "update")
+	// Add new built-in cmd func here...
+
+	// Add all user define literal commands.
+	for key := range misty.literalCommands {
+		if _, exist := misty.cmdFuncs[key]; !exist {
+			// cmdLiteral will query literalCommands for response.
+			misty.cmdFuncs[key] = misty.cmdLiteral
+			misty.cmdNames = append(misty.cmdNames, key)
+		}
+	}
+
+	fmt.Println("updateCommands done. Command count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
+}
 
 // MessageHandler be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
@@ -104,7 +175,7 @@ func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *di
 	}
 
 	// Try response the message.
-	reply := misty.responseMessage(messageCreate.Content)
+	reply := misty.responseMessage(messageCreate.Content, messageCreate.ChannelID)
 
 	if reply != "" {
 		// fmt.Println("ChannelMessageSend ChannelID: " + messageCreate.ChannelID)
@@ -114,7 +185,7 @@ func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *di
 
 // responseMessage return a suitable string as response message after decision.
 // An empty string will be returned if not suitable reply found.
-func (misty *Misty) responseMessage(message string) string {
+func (misty *Misty) responseMessage(message string, channelID string) string {
 	if strings.HasPrefix(message, commandPrefix+" ") {
 		//Check if misty is updating anything
 		if !misty.Updating {
@@ -125,10 +196,10 @@ func (misty *Misty) responseMessage(message string) string {
 			// get command and argument.(words) They should be devided by an empty character.
 			words := strings.Split(messageContent, " ")
 
-			return misty.responseCommand(words)
+			return misty.responseCommand(words, channelID)
 		}
 
-		return "I'm a little right now. Talk to me later. :smile: (Misty is updating data)"
+		return "I'm a little busy right now. Talk to me later. :smile: (Misty is updating data)"
 	} else if message == commandPrefix {
 		return guideReply
 	}
@@ -138,14 +209,14 @@ func (misty *Misty) responseMessage(message string) string {
 
 // responseCommand returns the command result by input wors.
 // An empty string will be returned if this is not a legal command.
-func (misty *Misty) responseCommand(words []string) string {
+func (misty *Misty) responseCommand(words []string, channelID string) string {
 	if len(words) > 0 {
 		// This maybe a command with arguments.
 		//Check if misty actually has this command.
 		if _, exist := misty.cmdFuncs[words[0]]; exist {
 			// args := words[1:]
 			// Call the cmd func and input words.
-			return misty.cmdFuncs[words[0]](words)
+			return misty.cmdFuncs[words[0]](words, channelID)
 		}
 
 		return "I don't know what you mean [" + words[0] + "]. " + guideReply
@@ -165,12 +236,17 @@ func (misty *Misty) GetVars() {
 }
 
 // Update do all data sync with sheet files on our Google Drive. And refresh anything needed.
-func (misty *Misty) Update() {
+func (misty *Misty) Update(channelID string) {
 	if !misty.Updating {
 		misty.Updating = true
 		misty.syncLStrings()
 		misty.syncLiteralCommands()
 		misty.updateCommands()
+
+		if misty.session != nil {
+			misty.session.ChannelMessageSend(channelID, "Update complete!")
+		}
+
 		misty.Updating = false
 	}
 }
@@ -272,28 +348,4 @@ func (misty *Misty) syncLiteralCommands() {
 			}
 		}
 	}
-}
-
-func (misty *Misty) updateCommands() {
-	misty.cmdFuncs = make(map[string]CmdFunc)
-	misty.cmdNames = []string{}
-
-	misty.cmdFuncs["help"] = misty.cmdHelp
-	misty.cmdNames = append(misty.cmdNames, "help")
-	misty.cmdFuncs["lstring"] = misty.cmdLString
-	misty.cmdNames = append(misty.cmdNames, "lstring")
-	misty.cmdFuncs["update"] = misty.cmdUpdate
-	misty.cmdNames = append(misty.cmdNames, "update")
-	// Add new built-in cmd func here...
-
-	// Add all user define literal commands.
-	for key := range misty.literalCommands {
-		if _, exist := misty.cmdFuncs[key]; !exist {
-			// cmdLiteral will query literalCommands for response.
-			misty.cmdFuncs[key] = misty.cmdLiteral
-			misty.cmdNames = append(misty.cmdNames, key)
-		}
-	}
-
-	fmt.Println("updateCommands done. Command count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
 }
