@@ -9,7 +9,8 @@ This is the private robot for projectA discord channel written by Golang.
 [Todo]
 [ok] 讓 bot 可以接受 misty 這個關鍵字作為命令開頭。（只對 misty 開頭的字串做判斷處理，這邊得先做出字串用空白分割)
 [ok] 讀取設定sheet，來決定接收命令時要回覆什麼特定字串。(一樣用 Google Sheet 定義)
-新增 update command 讓 misty 可以由任意使用者下指令更新資料。
+[ok] 新增 update command 讓 misty 可以由任意使用者下指令更新資料。
+支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 測試 golong timer 以及隨機自言自語功能的可能性。
 
 --
