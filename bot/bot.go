@@ -47,7 +47,7 @@ func (misty *Misty) Start() error {
 	misty.GetVars()
 
 	// Check args.
-	if misty.Params.Token == "" && misty.Params.Email == "" {
+	if misty.Params.Token == "" && (misty.Params.Email == "" || misty.Params.Password == "") {
 		// If the user does not behave as we think...
 		fmt.Println(Red("Input args not legal!"))
 		flag.Usage()
