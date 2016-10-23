@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"strconv"
@@ -44,6 +45,14 @@ type Misty struct {
 func (misty *Misty) Start() error {
 	// Get all commandline vars.
 	misty.GetVars()
+
+	// Check args.
+	if misty.Params.Token == "" && misty.Params.Email == "" {
+		// If the user does not behave as we think...
+		fmt.Println(Red("Input args not legal!"))
+		flag.Usage()
+		return errors.New("Program exit gracefully...")
+	}
 
 	// Update data.
 	misty.Update(AsylumChannelID)
@@ -231,7 +240,7 @@ func (misty *Misty) GetVars() {
 	//Parse (read) parmeters.
 	flag.StringVar(&misty.Params.Email, "e", "", "Account Email")
 	flag.StringVar(&misty.Params.Password, "p", "", "Account Password")
-	flag.StringVar(&misty.Params.Token, "t", "", "Account Token")
+	flag.StringVar(&misty.Params.Token, "t", "", "Bot Token")
 	flag.Parse()
 }
 

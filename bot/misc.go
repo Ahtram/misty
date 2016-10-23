@@ -24,6 +24,9 @@ var Cyan = color.New(color.FgHiCyan).SprintFunc()
 // Green = Green Color
 var Green = color.New(color.FgHiGreen).SprintFunc()
 
+// Red = Red Color
+var Red = color.New(color.FgHiRed).SprintFunc()
+
 // Lang is language enum.
 type Lang int
 

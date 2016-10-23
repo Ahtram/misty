@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 import "gitlab.com/ahtram/misty/bot"
 
 func main() {
@@ -7,7 +8,10 @@ func main() {
 	bot.PrintWelcomeMessage()
 
 	// Start the bot.
-	StartBot()
+	err := StartBot()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	return
 }
