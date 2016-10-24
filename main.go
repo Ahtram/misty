@@ -19,7 +19,7 @@ func main() {
 // StartBot gets the bot running.
 func StartBot() error {
 	//The prime data object.
-	misty := bot.Misty{Updating: false}
+	misty := bot.Misty{}
 	err := misty.Start()
 	if err != nil {
 		return err

@@ -29,7 +29,7 @@ type Misty struct {
 	Params  ExeParams
 	session *discordgo.Session
 	BotID   string
-	// Bunit-in commands.
+	// Command functions.
 	cmdFuncs map[string]CmdFunc
 	// This is the command name index. We need this to properly order the [help] command's output.
 	cmdNames []string
@@ -89,6 +89,7 @@ func (misty *Misty) Start() error {
 
 	misty.session.ChannelMessageSend(AsylumChannelID, "Misty is here! Hello world! :smile::smile::smile:")
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
 
@@ -142,8 +143,7 @@ func (misty *Misty) cmdUpdate(words []string, channelID string) string {
 // cmdLiteral query the user define reply string and return it.
 func (misty *Misty) cmdLiteral(words []string, channelID string) string {
 	if len(words) > 0 {
-		cmd := words[0]
-		return misty.literalCommands[cmd]
+		return misty.literalCommands[words[0]]
 	}
 	return "&^*(&^%$*&()*&$%#@))(*&^%$#@!!!!!!!)"
 }
@@ -246,7 +246,9 @@ func (misty *Misty) GetVars() {
 
 // Update do all data sync with sheet files on our Google Drive. And refresh anything needed.
 func (misty *Misty) Update(channelID string) {
+	// Check if we are already updating.
 	if !misty.Updating {
+		// Not updating. So we do update.
 		misty.Updating = true
 		misty.syncLStrings()
 		misty.syncLiteralCommands()

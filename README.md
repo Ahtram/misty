@@ -11,6 +11,7 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 讀取設定sheet，來決定接收命令時要回覆什麼特定字串。(一樣用 Google Sheet 定義)
 [ok] 新增 update command 讓 misty 可以由任意使用者下指令更新資料。
 [ok] 替 Misty 加上參數檢查邏輯，如果輸入參數錯誤會提醒使用者。
+限定特定使用者才能對 Misty 使用 Update Command. (權限)
 支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 測試 golong timer 以及隨機自言自語功能的可能性。
 
