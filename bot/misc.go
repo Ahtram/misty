@@ -6,11 +6,12 @@ import (
 	"net/http"
 
 	"github.com/fatih/color"
+	"gitlab.com/ahtram/misty/gshelp"
 )
 
 //Version number and program name define.
 const programName = "Misty"
-const version = "0.0.0.5"
+const version = "0.0.0.6"
 
 // Mag = Magenta Color
 var Mag = color.New(color.FgHiMagenta).SprintFunc()
@@ -45,9 +46,15 @@ var LangName = []string{"cht", "chs", "en", "jpn"}
 
 // ExeParams store the parameters.
 type ExeParams struct {
-	Email    string
-	Password string
-	Token    string
+	Email         string
+	Password      string
+	Token         string
+	ConfigSheetID string
+}
+
+// ConfigSheetURL returns the config sheet URL of the config file.
+func (params *ExeParams) ConfigSheetURL() string {
+	return gshelp.SheetIDToFeedURL(params.ConfigSheetID)
 }
 
 // PrintWelcomeMessage does what is says.

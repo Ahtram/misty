@@ -12,21 +12,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Hard coded URLs
-const localizedStringSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1w0EKa3K7pNQHY5sAAlY6I-9wQgub9jAe2ozC_1_N7FU/public/full"
-const literalCommandSheetFeedURL = "https://spreadsheets.google.com/feeds/worksheets/1haLbQuE7TtF79_J2XLbzFRYbAkfGRCmrXxwdbJ0d724/public/full"
-const commandPrefix = "misty"
-const guideReply = "Use [misty help] to get help info! :laughing:"
-
-//AsylumChannelID define the test channelID in our server.
-const AsylumChannelID = "210805901269925888"
-
 // CmdFunc is the function type for misty's commands.
 type CmdFunc func(words []string, channelID string) string
 
 // Misty is the primary data used by misty. It's a cheap db repacement.
 type Misty struct {
 	Params  ExeParams
+	conf    botConfig
 	session *discordgo.Session
 	BotID   string
 	// Command functions.
@@ -35,8 +27,8 @@ type Misty struct {
 	cmdNames []string
 	// User defined custom command return strings.
 	literalCommands map[string]string
-	// Localized string data from TET.
-	lstrings map[string][]string
+	// Localized lines for the bot.
+	lines map[string][]string
 	// Is updating something from the sheet.
 	Updating bool
 }
@@ -46,16 +38,16 @@ func (misty *Misty) Start() error {
 	// Get all commandline vars.
 	misty.GetVars()
 
-	// Check args.
-	if misty.Params.Token == "" && (misty.Params.Email == "" || misty.Params.Password == "") {
+	// Check vars.
+	if misty.Params.ConfigSheetID == "" || (misty.Params.Token == "" && (misty.Params.Email == "" || misty.Params.Password == "")) {
 		// If the user does not behave as we think...
-		fmt.Println(Red("Input args not legal!"))
+		fmt.Println(Red("Input vars not legal!"))
 		flag.Usage()
 		return errors.New("Program exit gracefully...")
 	}
 
 	// Update data.
-	misty.Update(AsylumChannelID)
+	misty.Update()
 
 	// Create a new Discord session using the provided login information.
 	var err error
@@ -87,13 +79,25 @@ func (misty *Misty) Start() error {
 		return err
 	}
 
-	misty.session.ChannelMessageSend(AsylumChannelID, "Misty is here! Hello world! :smile::smile::smile:")
+	misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, "Misty is here! Hello world! :smile::smile::smile:")
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
 
 	return nil
+}
+
+// Line returns the line string by ID and language.
+func (misty *Misty) Line(lineID string, lang int) string {
+	value, exist := misty.lines[lineID]
+	if exist {
+		if lang >= 0 && len(value) > lang {
+			return value[lang]
+		}
+		return ""
+	}
+	return ""
 }
 
 //=========== Define all build-in cmd process function here ===========
@@ -108,31 +112,6 @@ func (misty *Misty) cmdHelp(words []string, channelID string) string {
 	}
 	helpMessage = helpMessage + " :secret:"
 	return helpMessage
-}
-
-func (misty *Misty) cmdLString(words []string, channelID string) string {
-	if len(words) > 0 {
-		args := words[1:]
-		if len(args) > 0 {
-			// Check if the ID exist.
-			content, exist := misty.lstrings[args[0]]
-			if exist {
-				result := "Result: " + fmt.Sprint("\n")
-				for i := 0; i < LangTypeCount; i++ {
-					// Add a language tag.
-					if i < len(LangName) {
-						result = result + LangName[i]
-					}
-					result = result + " [" + content[i] + "]" + fmt.Sprint("\n")
-				}
-				return result
-			}
-			return "There is no such string in game [" + args[0] + "]. :weary:"
-		}
-		return "Use [misty lstring <StringID>] to query an in-game string."
-	}
-	// Show info message if there's no args.
-	return "Use [misty lstring <StringID>] to query an in-game string."
 }
 
 func (misty *Misty) cmdUpdate(words []string, channelID string) string {
@@ -156,8 +135,8 @@ func (misty *Misty) updateCommands() {
 
 	misty.cmdFuncs["help"] = misty.cmdHelp
 	misty.cmdNames = append(misty.cmdNames, "help")
-	misty.cmdFuncs["lstring"] = misty.cmdLString
-	misty.cmdNames = append(misty.cmdNames, "lstring")
+	// misty.cmdFuncs["lstring"] = misty.cmdLString
+	// misty.cmdNames = append(misty.cmdNames, "lstring")
 	misty.cmdFuncs["update"] = misty.cmdUpdate
 	misty.cmdNames = append(misty.cmdNames, "update")
 	// Add new built-in cmd func here...
@@ -195,12 +174,12 @@ func (misty *Misty) MessageHandler(session *discordgo.Session, messageCreate *di
 // responseMessage return a suitable string as response message after decision.
 // An empty string will be returned if not suitable reply found.
 func (misty *Misty) responseMessage(message string, channelID string) string {
-	if strings.HasPrefix(message, commandPrefix+" ") {
+	if strings.HasPrefix(message, misty.conf.CommandPrefix+" ") {
 		//Check if misty is updating anything
 		if !misty.Updating {
 			//Could response commands now.
 			// Trim the prefix to get the message content.
-			messageContent := strings.TrimPrefix(message, commandPrefix+" ")
+			messageContent := strings.TrimPrefix(message, misty.conf.CommandPrefix+" ")
 
 			// get command and argument.(words) They should be devided by an empty character.
 			words := strings.Split(messageContent, " ")
@@ -209,8 +188,8 @@ func (misty *Misty) responseMessage(message string, channelID string) string {
 		}
 
 		return "I'm a little busy right now. Talk to me later. :smile: (Misty is updating data)"
-	} else if message == commandPrefix {
-		return guideReply
+	} else if message == misty.conf.CommandPrefix {
+		return misty.Line("guideReply", 0)
 	}
 	// Not response.
 	return ""
@@ -228,7 +207,7 @@ func (misty *Misty) responseCommand(words []string, channelID string) string {
 			return misty.cmdFuncs[words[0]](words, channelID)
 		}
 
-		return "I don't know what you mean [" + words[0] + "]. " + guideReply
+		return "I don't know what you mean [" + words[0] + "]. " + misty.Line("guideReply", 0)
 	}
 
 	// Not response.
@@ -241,32 +220,73 @@ func (misty *Misty) GetVars() {
 	flag.StringVar(&misty.Params.Email, "e", "", "Account Email")
 	flag.StringVar(&misty.Params.Password, "p", "", "Account Password")
 	flag.StringVar(&misty.Params.Token, "t", "", "Bot Token")
+	flag.StringVar(&misty.Params.ConfigSheetID, "c", "", "Config Sheet")
 	flag.Parse()
 }
 
 // Update do all data sync with sheet files on our Google Drive. And refresh anything needed.
-func (misty *Misty) Update(channelID string) {
+func (misty *Misty) Update(channelID ...string) {
 	// Check if we are already updating.
 	if !misty.Updating {
 		// Not updating. So we do update.
 		misty.Updating = true
-		misty.syncLStrings()
+		misty.syncConfig()
+		misty.syncLines()
 		misty.syncLiteralCommands()
 		misty.updateCommands()
 
 		if misty.session != nil {
-			misty.session.ChannelMessageSend(channelID, "Update complete!")
+			if len(channelID) > 0 {
+				misty.session.ChannelMessageSend(channelID[0], "Update complete!")
+			} else {
+				misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, "Update complete!")
+			}
 		}
-
 		misty.Updating = false
 	}
 }
 
-// syncLStrings fetches lstrings from our Google Drive and return them.
-func (misty *Misty) syncLStrings() {
+func (misty *Misty) syncConfig() {
 	// Sync LStrings.
-	fmt.Print("Syncing LString Data...")
-	workSheetXMLContent, err := fetchFeed(localizedStringSheetFeedURL)
+	fmt.Print("Syncing Config Data...")
+	workSheetXMLContent, err := fetchFeed(misty.Params.ConfigSheetURL())
+
+	// All tabs' GSeetData.
+	sheetData := []gshelp.GSheetData{}
+
+	if err != nil {
+		//Oh carp!
+		fmt.Println("[Error] " + err.Error())
+	} else {
+		fmt.Println("[Complete]")
+		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
+
+		// Get all cellfeeds.
+		for i, URL := range URLs {
+			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
+			cellXMLContent, err := fetchFeed(URL)
+			if err != nil {
+				fmt.Println("[Error] " + err.Error())
+			} else {
+				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
+
+				// Store in the golbal var.
+				sheetData = append(sheetData, tabData)
+				fmt.Println("[Complete]")
+			}
+		}
+	}
+
+	misty.conf.Setup(sheetData)
+
+	// fmt.Println(misty.conf.ToString())
+}
+
+// syncLStrings fetches lstrings from our Google Drive and return them.
+func (misty *Misty) syncLines() {
+	// Sync LStrings.
+	fmt.Print("Syncing Line Data...")
+	workSheetXMLContent, err := fetchFeed(misty.conf.LineSheetURL())
 
 	// All tabs' GSeetData.
 	sheetData := []gshelp.GSheetData{}
@@ -295,7 +315,7 @@ func (misty *Misty) syncLStrings() {
 	}
 
 	// This will empty this container.
-	misty.lstrings = make(map[string][]string)
+	misty.lines = make(map[string][]string)
 
 	// Iterate through tabs.
 	for _, sheetTab := range sheetData {
@@ -305,7 +325,7 @@ func (misty *Misty) syncLStrings() {
 			if len(row) > 0 {
 				if row[0] != "" {
 					// Add this row.
-					misty.lstrings[row[0]] = row[1:5]
+					misty.lines[row[0]] = row[1:5]
 				}
 			}
 		}
@@ -315,7 +335,7 @@ func (misty *Misty) syncLStrings() {
 func (misty *Misty) syncLiteralCommands() {
 	// Sync LStrings.
 	fmt.Print("Syncing LiteralCommands Data...")
-	workSheetXMLContent, err := fetchFeed(literalCommandSheetFeedURL)
+	workSheetXMLContent, err := fetchFeed(misty.conf.LiteralCommandSheetURL())
 
 	// All tabs' GSeetData.
 	sheetData := []gshelp.GSheetData{}

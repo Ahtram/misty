@@ -11,6 +11,9 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 讀取設定sheet，來決定接收命令時要回覆什麼特定字串。(一樣用 Google Sheet 定義)
 [ok] 新增 update command 讓 misty 可以由任意使用者下指令更新資料。
 [ok] 替 Misty 加上參數檢查邏輯，如果輸入參數錯誤會提醒使用者。
+[ok] 替 Misty 設計 Config Sheet 以及 Config 結構，此結構用來設定這個機器人的工作內容以及身分。
+[ok] 將不同身分的 Misty Bot 表單分開，並且透過參數在執行時傳入表單ID，去決定這個機器人的身分以及工作。
+
 限定特定使用者才能對 Misty 使用 Update Command. (權限)
 支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 測試 golong timer 以及隨機自言自語功能的可能性。
@@ -43,12 +46,18 @@ https://discordapp.com/developers/applications/me/231105148074721280
 //讓 misty 加入自己 server 用的連結
 https://discordapp.com/oauth2/authorize?client_id=231105148074721280&scope=bot&permissions=0
 
-//執行指令
-./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
+//讓 uni 加入自己 server 用的連結
+https://discordapp.com/oauth2/authorize?client_id=240432374574350338&scope=bot&permissions=0
+
+//執行 Misty
+./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y" -c 1H46UgwUKfg7OqE31uxj5ko_B_a_E7Y600W8eM4V2EGI
 or
 ./misty -e [email] -p [password]
 or 
 ./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
+
+//執行Uni
+./misty -t "Bot MjQwNDMyMzc0NTc0MzUwMzM4.CvDPpg.qqrJHoy27PvltMjsbTIFsdg9QpQ"
 
 使用 tmux 指令來背景常駐運作 misty
 tmux 教學: https://gist.github.com/MohamedAlaa/2961058
