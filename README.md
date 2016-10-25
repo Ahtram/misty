@@ -57,7 +57,7 @@ or
 ./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
 
 //執行Uni
-./misty -t "Bot MjQwNDMyMzc0NTc0MzUwMzM4.CvDPpg.qqrJHoy27PvltMjsbTIFsdg9QpQ"
+./misty -t "Bot MjQwNDMyMzc0NTc0MzUwMzM4.CvDPpg.qqrJHoy27PvltMjsbTIFsdg9QpQ" -c 1fBpU4E9vE6BQVYX8ho1GW6NGm-Exg9rzKo4nMWlbcck
 
 使用 tmux 指令來背景常駐運作 misty
 tmux 教學: https://gist.github.com/MohamedAlaa/2961058

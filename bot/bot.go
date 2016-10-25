@@ -79,7 +79,7 @@ func (misty *Misty) Start() error {
 		return err
 	}
 
-	misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, "Misty is here! Hello world! :smile::smile::smile:")
+	misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("onlineNotify", 0))
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 
 	// Simple way to keep program running until CTRL-C is pressed.
@@ -116,13 +116,13 @@ func (misty *Misty) cmdHelp(words []string, channelID string) string {
 
 func (misty *Misty) cmdUpdate(words []string, channelID string) string {
 	go misty.Update(channelID)
-	return "Roger that! Starting the update..."
+	return misty.Line("updateStart", 0)
 }
 
 // cmdLiteral query the user define reply string and return it.
 func (misty *Misty) cmdLiteral(words []string, channelID string) string {
 	if len(words) > 0 {
-		return misty.literalCommands[words[0]]
+		return misty.Line(misty.literalCommands[words[0]], 0)
 	}
 	return "&^*(&^%$*&()*&$%#@))(*&^%$#@!!!!!!!)"
 }
@@ -237,9 +237,9 @@ func (misty *Misty) Update(channelID ...string) {
 
 		if misty.session != nil {
 			if len(channelID) > 0 {
-				misty.session.ChannelMessageSend(channelID[0], "Update complete!")
+				misty.session.ChannelMessageSend(channelID[0], misty.Line("updateComplete", 0))
 			} else {
-				misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, "Update complete!")
+				misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("updateComplete", 0))
 			}
 		}
 		misty.Updating = false
