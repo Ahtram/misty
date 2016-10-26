@@ -15,6 +15,8 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 將不同身分的 Misty Bot 表單分開，並且透過參數在執行時傳入表單ID，去決定這個機器人的身分以及工作。
 
 限定特定使用者才能對 Misty 使用 Update Command. (權限)
+支援 misty 開啟時設定語系。
+支援 misty 在執行時期可以接受命令更換語系。
 支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 測試 golong timer 以及隨機自言自語功能的可能性。
 
