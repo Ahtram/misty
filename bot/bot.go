@@ -23,13 +23,13 @@ type Misty struct {
 	BotID   string
 	// Command functions.
 	cmdFuncs map[string]CmdFunc
-	// This is the command name index. We need this to properly order the [help] command's output.
-	cmdNames []string
-	// User defined custom command return strings.
-	literalCommands map[string]string
-	// Localized lines for the bot.
+	// User defined custom command return strings. (map[Name]([Content Str ID][Desc Str ID]))
+	literalCommands map[string][2]string
+	// This is the command index. We need this to properly order the [help] command's output. ([]([Name][Desc Str ID]))
+	cmdIndex [][2]string
+	// Localized lines for the bot. [key][localized string array]
 	lines map[string][]string
-	// Is updating something from the sheet.
+	// Is executing an updating.
 	Updating bool
 }
 
@@ -103,14 +103,15 @@ func (misty *Misty) Line(lineID string, lang int) string {
 //=========== Define all build-in cmd process function here ===========
 
 func (misty *Misty) cmdHelp(words []string, channelID string) string {
-	helpMessage := ":secret:"
-	helpMessage = helpMessage + " Try these keywords on me: "
-	for _, value := range misty.cmdNames {
-		if value != "help" {
-			helpMessage = helpMessage + " [" + value + "]"
+	helpMessage := ":secret::secret::secret:\n"
+	helpMessage += "```Markdown\n"
+	for _, value := range misty.cmdIndex {
+		if value[0] != "help" && value[0] != "update" {
+			helpMessage += "#[" + value[0] + "]\n"
+			helpMessage += "    " + misty.Line(value[1], 0) + "\n"
 		}
 	}
-	helpMessage = helpMessage + " :secret:"
+	helpMessage += "```"
 	return helpMessage
 }
 
@@ -122,36 +123,13 @@ func (misty *Misty) cmdUpdate(words []string, channelID string) string {
 // cmdLiteral query the user define reply string and return it.
 func (misty *Misty) cmdLiteral(words []string, channelID string) string {
 	if len(words) > 0 {
-		return misty.Line(misty.literalCommands[words[0]], 0)
+		//Read the first index: the content of this literal command.
+		return misty.Line(misty.literalCommands[words[0]][0], 0)
 	}
 	return "&^*(&^%$*&()*&$%#@))(*&^%$#@!!!!!!!)"
 }
 
 //=====================================================================
-
-func (misty *Misty) updateCommands() {
-	misty.cmdFuncs = make(map[string]CmdFunc)
-	misty.cmdNames = []string{}
-
-	misty.cmdFuncs["help"] = misty.cmdHelp
-	misty.cmdNames = append(misty.cmdNames, "help")
-	// misty.cmdFuncs["lstring"] = misty.cmdLString
-	// misty.cmdNames = append(misty.cmdNames, "lstring")
-	misty.cmdFuncs["update"] = misty.cmdUpdate
-	misty.cmdNames = append(misty.cmdNames, "update")
-	// Add new built-in cmd func here...
-
-	// Add all user define literal commands.
-	for key := range misty.literalCommands {
-		if _, exist := misty.cmdFuncs[key]; !exist {
-			// cmdLiteral will query literalCommands for response.
-			misty.cmdFuncs[key] = misty.cmdLiteral
-			misty.cmdNames = append(misty.cmdNames, key)
-		}
-	}
-
-	fmt.Println("updateCommands done. Command count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
-}
 
 // MessageHandler be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
@@ -232,8 +210,12 @@ func (misty *Misty) Update(channelID ...string) {
 		misty.Updating = true
 		misty.syncConfig()
 		misty.syncLines()
+
+		misty.cmdFuncs = make(map[string]CmdFunc)
+		misty.cmdIndex = [][2]string{}
+
+		misty.updateBuiltInCommands()
 		misty.syncLiteralCommands()
-		misty.updateCommands()
 
 		if misty.session != nil {
 			if len(channelID) > 0 {
@@ -332,6 +314,26 @@ func (misty *Misty) syncLines() {
 	}
 }
 
+func (misty *Misty) updateBuiltInCommands() {
+	//build-in commands
+	misty.cmdFuncs["help"] = misty.cmdHelp
+	misty.cmdIndex = append(misty.cmdIndex, [2]string{"help", ""})
+	misty.cmdFuncs["update"] = misty.cmdUpdate
+	misty.cmdIndex = append(misty.cmdIndex, [2]string{"update", ""})
+	// Add new built-in cmd func here...
+
+	// // Add all user define literal commands.
+	// for key, value := range misty.literalCommands {
+	// 	if _, exist := misty.cmdFuncs[key]; !exist {
+	// 		// cmdLiteral will query literalCommands for response.
+	// 		misty.cmdFuncs[key] = misty.cmdLiteral
+	// 		misty.cmdIndex = append(misty.cmdIndex, [2]string{key, value[1]})
+	// 	}
+	// }
+
+	// fmt.Println("updateCommands done. Command count: [" + strconv.Itoa(len(misty.cmdFuncs)) + "].")
+}
+
 func (misty *Misty) syncLiteralCommands() {
 	// Sync LStrings.
 	fmt.Print("Syncing LiteralCommands Data...")
@@ -364,7 +366,7 @@ func (misty *Misty) syncLiteralCommands() {
 	}
 
 	// This will empty this container.
-	misty.literalCommands = make(map[string]string)
+	misty.literalCommands = make(map[string][2]string)
 
 	// Iterate through tabs.
 	for _, sheetTab := range sheetData {
@@ -372,9 +374,12 @@ func (misty *Misty) syncLiteralCommands() {
 		for _, row := range sheetTab.StringTable {
 			// Check if each row has an ID.
 			if len(row) > 1 {
-				if row[0] != "" && row[1] != "" {
-					// Add this row.
-					misty.literalCommands[row[0]] = row[1]
+				if row[0] != "" && row[1] != "" && row[2] != "" {
+					// Add this row. {Content Str ID, Desc Str ID}
+					misty.literalCommands[row[0]] = [2]string{row[1], row[2]}
+					// {Name, Desc Str ID}
+					misty.cmdIndex = append(misty.cmdIndex, [2]string{row[0], row[2]})
+					misty.cmdFuncs[row[0]] = misty.cmdLiteral
 				}
 			}
 		}

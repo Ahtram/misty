@@ -11,7 +11,7 @@ const configKeyResidentDiscordChannelID = "residentDiscordChannelID"
 const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
 const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
 
-// botConfig stores the config values readed from our Google Sheet config file.
+// botConfig stores the config values readed from the Google Sheet config file.
 type botConfig struct {
 	CommandPrefix            string
 	lineSheetID              string
