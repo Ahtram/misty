@@ -17,8 +17,8 @@ type botConfig struct {
 	lineSheetID              string
 	literalCommandSheetID    string
 	ResidentDiscordChannelID string
-	WatchingBeamChannel      []string
-	WatchingHitboxChannel    []string
+	WatchingBeamChannel      string
+	WatchingHitboxChannel    string
 }
 
 // ToString output the object's content and return as a formated string.
@@ -28,14 +28,17 @@ func (conf *botConfig) ToString() string {
 	returnString += "lineSheetID: [" + conf.lineSheetID + "]\n"
 	returnString += "literalCommandSheetID: [" + conf.literalCommandSheetID + "]\n"
 	returnString += "ResidentDiscordChannelID: [" + conf.ResidentDiscordChannelID + "]\n"
+	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
+	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
 
-	for _, v := range conf.WatchingBeamChannel {
-		returnString += "WatchingBeamChannel: [" + v + "]\n"
-	}
+	//[Dep]: Due to REST API limitation. Watching multiple channels may not be a good idea...
+	// for _, v := range conf.WatchingBeamChannel {
+	// 	returnString += "WatchingBeamChannel: [" + v + "]\n"
+	// }
 
-	for _, v := range conf.WatchingHitboxChannel {
-		returnString += "WatchingHitboxChannel: [" + v + "]\n"
-	}
+	// for _, v := range conf.WatchingHitboxChannel {
+	// 	returnString += "WatchingHitboxChannel: [" + v + "]\n"
+	// }
 	return returnString
 }
 
@@ -67,9 +70,9 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 				} else if row[0] == configKeyResidentDiscordChannelID {
 					conf.ResidentDiscordChannelID = row[1]
 				} else if row[0] == configKeyBeamWatchingChannelID {
-					conf.WatchingBeamChannel = append(conf.WatchingBeamChannel, row[1])
+					conf.WatchingBeamChannel = row[1]
 				} else if row[0] == configKeyHitboxWatchingChannelID {
-					conf.WatchingHitboxChannel = append(conf.WatchingHitboxChannel, row[1])
+					conf.WatchingHitboxChannel = row[1]
 				}
 			}
 		}

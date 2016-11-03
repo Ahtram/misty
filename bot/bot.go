@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"gitlab.com/ahtram/misty/gshelp"
 
@@ -17,10 +18,12 @@ type CmdFunc func(words []string, channelID string) string
 
 // Misty is the primary data used by misty. It's a cheap db repacement.
 type Misty struct {
-	Params  ExeParams
-	conf    botConfig
-	session *discordgo.Session
-	BotID   string
+	Params ExeParams
+	conf   botConfig
+	// Store the least watching channel's online status.
+	streamingStatus streamingStatusCache
+	session         *discordgo.Session
+	BotID           string
 	// Command functions.
 	cmdFuncs map[string]CmdFunc
 	// User defined custom command return strings. (map[Name]([Content Str ID][Desc Str ID]))
@@ -48,6 +51,9 @@ func (misty *Misty) Start() error {
 
 	// Update data.
 	misty.Update()
+
+	// Start observe the watching Beam/hitbox channel.
+	misty.startObserveStreamingStatus()
 
 	// Create a new Discord session using the provided login information.
 	var err error
@@ -261,7 +267,8 @@ func (misty *Misty) syncConfig() {
 
 	misty.conf.Setup(sheetData)
 
-	// fmt.Println(misty.conf.ToString())
+	//Print the config of this bot.
+	fmt.Println(misty.conf.ToString())
 }
 
 // syncLStrings fetches lstrings from our Google Drive and return them.
@@ -384,4 +391,70 @@ func (misty *Misty) syncLiteralCommands() {
 			}
 		}
 	}
+}
+
+func (misty *Misty) startObserveStreamingStatus() {
+	//Observe the watching Beam channel.
+	beamTicker := time.NewTicker(time.Second * 3)
+	go func() {
+		for _ = range beamTicker.C {
+			//Prevent observing when the bot is updating or do not have a Beam channel name.
+			if !misty.Updating && misty.conf.WatchingBeamChannel != "" {
+				isOnline, err := isBeamChannelOnline(misty.conf.WatchingBeamChannel)
+				if err != nil {
+					fmt.Println(err)
+				}
+				//Compare to the cache status vars.
+				if isOnline {
+					if !misty.streamingStatus.BeamOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.BeamOnline = true
+
+						informMessage := misty.Line("beamStreamingOnline", 0) + "\n"
+						informMessage += beamChannelURLPrefix + misty.conf.WatchingBeamChannel
+						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+					} //Okey. Do nothing.
+				} else {
+					if misty.streamingStatus.BeamOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.BeamOnline = false
+						informMessage := misty.Line("beamStreamingOffline", 0)
+						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+					}
+				}
+			}
+		}
+	}()
+
+	//Observe the watching Hitbox channel.
+	hitboxTicker := time.NewTicker(time.Second * 30)
+	go func() {
+		for _ = range hitboxTicker.C {
+			//Prevent observing when the bot is updating or do not have a Hitbox channel name.
+			if !misty.Updating && misty.conf.WatchingHitboxChannel != "" {
+				isOnline, err := isHitboxChannelOnline(misty.conf.WatchingHitboxChannel)
+				if err != nil {
+					fmt.Println(err)
+				}
+				//Compare to the cache status vars.
+				if isOnline {
+					if !misty.streamingStatus.HitboxOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.HitboxOnline = true
+
+						informMessage := misty.Line("hitboxStreamingOnline", 0) + "\n"
+						informMessage += hitboxChannelURLPrefix + misty.conf.WatchingHitboxChannel
+						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+					} //Okey. Do nothing.
+				} else {
+					if misty.streamingStatus.HitboxOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.HitboxOnline = false
+						informMessage := misty.Line("hitboxStreamingOffline", 0)
+						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+					}
+				}
+			}
+		}
+	}()
 }

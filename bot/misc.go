@@ -96,3 +96,10 @@ func fetchFeed(feedURL string) (content string, err error) {
 
 	return string(htmlData), nil
 }
+
+//==========================
+
+type streamingStatusCache struct {
+	BeamOnline   bool
+	HitboxOnline bool
+}
