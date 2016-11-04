@@ -11,7 +11,7 @@ import (
 
 //Version number and program name define.
 const programName = "Misty"
-const version = "0.0.0.6"
+const version = "0.0.0.7"
 
 // Mag = Magenta Color
 var Mag = color.New(color.FgHiMagenta).SprintFunc()

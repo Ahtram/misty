@@ -14,8 +14,10 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 替 Misty 設計 Config Sheet 以及 Config 結構，此結構用來設定這個機器人的工作內容以及身分。
 [ok] 將不同身分的 Misty Bot 表單分開，並且透過參數在執行時傳入表單ID，去決定這個機器人的身分以及工作。
 [ok] 格式化 help command 的顯示方式。讓使用者易於閱讀。
+[ok] 支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
+[ok] 使用 cid 命令來取得某個 Channel 的 ID。
+[ok] config 現在支援指定 BroadcastChannelID ，設定機器人廣播用頻道。
 
-支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 限定特定使用者才能對 Misty 使用 Update Command. (權限)
 支援 misty 開啟時設定語系。
 支援 misty 在執行時期可以接受命令更換語系。

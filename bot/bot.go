@@ -206,6 +206,15 @@ func (misty *Misty) responseCommand(words []string, channelID string) string {
 	return ""
 }
 
+// broadcastMessage send a message to all broadcast channel in config.
+func (misty *Misty) broadcastMessage(message string) {
+	if misty.session != nil {
+		for _, v := range misty.conf.BroadcastDiscrdChannelID {
+			misty.session.ChannelMessageSend(v, message)
+		}
+	}
+}
+
 // GetVars will scan all vars with flag and return them.
 func (misty *Misty) GetVars() {
 	//Parse (read) parmeters.
@@ -422,14 +431,14 @@ func (misty *Misty) startObserveStreamingStatus() {
 
 						informMessage := misty.Line("beamStreamingOnline", 0) + "\n"
 						informMessage += beamChannelURLPrefix + misty.conf.WatchingBeamChannel
-						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
 					if misty.streamingStatus.BeamOnline {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.BeamOnline = false
 						informMessage := misty.Line("beamStreamingOffline", 0)
-						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+						misty.broadcastMessage(informMessage)
 					}
 				}
 			}
@@ -437,7 +446,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 	}()
 
 	//Observe the watching Hitbox channel.
-	hitboxTicker := time.NewTicker(time.Second * 30)
+	hitboxTicker := time.NewTicker(time.Second * 40)
 	go func() {
 		for _ = range hitboxTicker.C {
 			//Prevent observing when the bot is updating or do not have a Hitbox channel name.
@@ -454,14 +463,14 @@ func (misty *Misty) startObserveStreamingStatus() {
 
 						informMessage := misty.Line("hitboxStreamingOnline", 0) + "\n"
 						informMessage += hitboxChannelURLPrefix + misty.conf.WatchingHitboxChannel
-						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
 					if misty.streamingStatus.HitboxOnline {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.HitboxOnline = false
 						informMessage := misty.Line("hitboxStreamingOffline", 0)
-						misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, informMessage)
+						misty.broadcastMessage(informMessage)
 					}
 				}
 			}

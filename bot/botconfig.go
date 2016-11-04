@@ -8,6 +8,7 @@ const configKeyCmdPrefix = "commandPrefix"
 const configKeyLineSheetID = "lineSheetID"
 const configKeyLiteralCommandSheetID = "literalCommandSheetID"
 const configKeyResidentDiscordChannelID = "residentDiscordChannelID"
+const configKeyBroadcastDiscordChannelID = "broadcastDiscordChannelID"
 const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
 const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
 
@@ -17,6 +18,7 @@ type botConfig struct {
 	lineSheetID              string
 	literalCommandSheetID    string
 	ResidentDiscordChannelID string
+	BroadcastDiscrdChannelID []string
 	WatchingBeamChannel      string
 	WatchingHitboxChannel    string
 }
@@ -31,6 +33,11 @@ func (conf *botConfig) ToString() string {
 	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
 	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
 
+	//Due to REST API limitation. Watching multiple channels may not be a good idea...
+	for _, v := range conf.BroadcastDiscrdChannelID {
+		returnString += "BroadcastDiscrdChannelID: [" + v + "]\n"
+	}
+
 	//[Dep]: Due to REST API limitation. Watching multiple channels may not be a good idea...
 	// for _, v := range conf.WatchingBeamChannel {
 	// 	returnString += "WatchingBeamChannel: [" + v + "]\n"
@@ -39,6 +46,7 @@ func (conf *botConfig) ToString() string {
 	// for _, v := range conf.WatchingHitboxChannel {
 	// 	returnString += "WatchingHitboxChannel: [" + v + "]\n"
 	// }
+
 	return returnString
 }
 
@@ -73,6 +81,10 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 					conf.WatchingBeamChannel = row[1]
 				} else if row[0] == configKeyHitboxWatchingChannelID {
 					conf.WatchingHitboxChannel = row[1]
+				} else if row[0] == configKeyBroadcastDiscordChannelID {
+					if row[1] != "" {
+						conf.BroadcastDiscrdChannelID = append(conf.BroadcastDiscrdChannelID, row[1])
+					}
 				}
 			}
 		}
