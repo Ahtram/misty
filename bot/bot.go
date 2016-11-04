@@ -112,7 +112,7 @@ func (misty *Misty) cmdHelp(words []string, channelID string) string {
 	helpMessage := ":secret::secret::secret:\n"
 	helpMessage += "```Markdown\n"
 	for _, value := range misty.cmdIndex {
-		if value[0] != "help" && value[0] != "update" {
+		if value[0] != "help" && value[0] != "update" && value[0] != "cid" {
 			helpMessage += "#[" + value[0] + "]\n"
 			helpMessage += "    " + misty.Line(value[1], 0) + "\n"
 		}
@@ -124,6 +124,14 @@ func (misty *Misty) cmdHelp(words []string, channelID string) string {
 func (misty *Misty) cmdUpdate(words []string, channelID string) string {
 	go misty.Update(channelID)
 	return misty.Line("updateStart", 0)
+}
+
+func (misty *Misty) cmdChannelID(words []string, channelID string) string {
+	returnMessage := "```Markdown\n"
+	returnMessage += "#ChannelID:\n"
+	returnMessage += channelID + "\n"
+	returnMessage += "```"
+	return returnMessage
 }
 
 // cmdLiteral query the user define reply string and return it.
@@ -327,6 +335,8 @@ func (misty *Misty) updateBuiltInCommands() {
 	misty.cmdIndex = append(misty.cmdIndex, [2]string{"help", ""})
 	misty.cmdFuncs["update"] = misty.cmdUpdate
 	misty.cmdIndex = append(misty.cmdIndex, [2]string{"update", ""})
+	misty.cmdFuncs["cid"] = misty.cmdChannelID
+	misty.cmdIndex = append(misty.cmdIndex, [2]string{"cid", ""})
 	// Add new built-in cmd func here...
 
 	// // Add all user define literal commands.
