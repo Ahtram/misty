@@ -73,7 +73,7 @@ func (misty *Misty) Start() error {
 	// Store the account ID for later use.
 	misty.BotID = user.ID
 
-	fmt.Println("BotID: " + Green(misty.BotID))
+	fmt.Println("BotID: " + Yellow(misty.BotID))
 
 	// Register messageHandler as a callback for the messageHandler events.
 	misty.session.AddHandler(misty.MessageHandler)
@@ -85,7 +85,10 @@ func (misty *Misty) Start() error {
 		return err
 	}
 
-	misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("onlineNotify", 0))
+	//Send online notify message?
+	if misty.conf.onlineNotify {
+		misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("onlineNotify", 0))
+	}
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 
 	// Simple way to keep program running until CTRL-C is pressed.
@@ -261,9 +264,9 @@ func (misty *Misty) syncConfig() {
 
 	if err != nil {
 		//Oh carp!
-		fmt.Println("[Error] " + err.Error())
+		fmt.Println(Red("[Error] ") + err.Error())
 	} else {
-		fmt.Println("[Complete]")
+		fmt.Println(Green("[Complete]"))
 		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
 
 		// Get all cellfeeds.
@@ -271,13 +274,13 @@ func (misty *Misty) syncConfig() {
 			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
 			cellXMLContent, err := fetchFeed(URL)
 			if err != nil {
-				fmt.Println("[Error] " + err.Error())
+				fmt.Println(Red("[Error] ") + err.Error())
 			} else {
 				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
 
 				// Store in the golbal var.
 				sheetData = append(sheetData, tabData)
-				fmt.Println("[Complete]")
+				fmt.Println(Green("[Complete]"))
 			}
 		}
 	}
@@ -299,9 +302,9 @@ func (misty *Misty) syncLines() {
 
 	if err != nil {
 		//Oh carp!
-		fmt.Println("[Error] " + err.Error())
+		fmt.Println(Red("[Error] ") + err.Error())
 	} else {
-		fmt.Println("[Complete]")
+		fmt.Println(Green("[Complete]"))
 		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
 
 		// Get all cellfeeds.
@@ -309,13 +312,13 @@ func (misty *Misty) syncLines() {
 			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
 			cellXMLContent, err := fetchFeed(URL)
 			if err != nil {
-				fmt.Println("[Error] " + err.Error())
+				fmt.Println(Red("[Error] ") + err.Error())
 			} else {
 				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
 
 				// Store in the golbal var.
 				sheetData = append(sheetData, tabData)
-				fmt.Println("[Complete]")
+				fmt.Println(Green("[Complete]"))
 			}
 		}
 	}
@@ -370,9 +373,9 @@ func (misty *Misty) syncLiteralCommands() {
 
 	if err != nil {
 		//Oh carp!
-		fmt.Println("[Error] " + err.Error())
+		fmt.Println(Red("[Error] ") + err.Error())
 	} else {
-		fmt.Println("[Complete]")
+		fmt.Println(Green("[Complete]"))
 		URLs := gshelp.WorkSheetFeedToCellFeedURLs(workSheetXMLContent)
 
 		// Get all cellfeeds.
@@ -380,13 +383,13 @@ func (misty *Misty) syncLiteralCommands() {
 			fmt.Print("[Fetching Tab] : [" + strconv.Itoa(i) + "]...")
 			cellXMLContent, err := fetchFeed(URL)
 			if err != nil {
-				fmt.Println("[Error] " + err.Error())
+				fmt.Println(Red("[Error] ") + err.Error())
 			} else {
 				tabData := gshelp.CellFeedToGSheetData(cellXMLContent)
 
 				// Store in the golbal var.
 				sheetData = append(sheetData, tabData)
-				fmt.Println("[Complete]")
+				fmt.Println(Green("[Complete]"))
 			}
 		}
 	}

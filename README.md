@@ -18,6 +18,7 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 使用 cid 命令來取得某個 Channel 的 ID。
 [ok] config 現在支援指定 BroadcastChannelID ，設定機器人廣播用頻道。
 
+config 新增變數 onlineNotify 設定上線時是否發送通知訊息。
 broadcast功能，讓 misty 可以透過命令在管理者頻道內指定 misty 廣播到所有 Broadcast Channel.
 限定特定頻道才能對 Misty 使用特定的管理者 Command. (update/broadcast) (權限)
 支援 misty 開啟時設定語系。

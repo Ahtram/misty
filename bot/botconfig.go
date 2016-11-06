@@ -1,12 +1,14 @@
 package bot
 
 import "gitlab.com/ahtram/misty/gshelp"
+import "strconv"
 import "strings"
 import "errors"
 
 const configKeyCmdPrefix = "commandPrefix"
 const configKeyLineSheetID = "lineSheetID"
 const configKeyLiteralCommandSheetID = "literalCommandSheetID"
+const configKeyOnlineNotify = "onlineNotify"
 const configKeyResidentDiscordChannelID = "residentDiscordChannelID"
 const configKeyBroadcastDiscordChannelID = "broadcastDiscordChannelID"
 const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
@@ -17,6 +19,7 @@ type botConfig struct {
 	CommandPrefix            string
 	lineSheetID              string
 	literalCommandSheetID    string
+	onlineNotify             bool
 	ResidentDiscordChannelID string
 	BroadcastDiscrdChannelID []string
 	WatchingBeamChannel      string
@@ -25,10 +28,11 @@ type botConfig struct {
 
 // ToString output the object's content and return as a formated string.
 func (conf *botConfig) ToString() string {
-	var returnString = ""
+	var returnString = "=================== [Config] ====================\n"
 	returnString += "CommandPrefix: [" + conf.CommandPrefix + "]\n"
 	returnString += "lineSheetID: [" + conf.lineSheetID + "]\n"
 	returnString += "literalCommandSheetID: [" + conf.literalCommandSheetID + "]\n"
+	returnString += "onlineNotify: [" + strconv.FormatBool(conf.onlineNotify) + "]\n"
 	returnString += "ResidentDiscordChannelID: [" + conf.ResidentDiscordChannelID + "]\n"
 	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
 	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
@@ -37,6 +41,8 @@ func (conf *botConfig) ToString() string {
 	for _, v := range conf.BroadcastDiscrdChannelID {
 		returnString += "BroadcastDiscrdChannelID: [" + v + "]\n"
 	}
+
+	returnString += "================================================="
 
 	//[Dep]: Due to REST API limitation. Watching multiple channels may not be a good idea...
 	// for _, v := range conf.WatchingBeamChannel {
@@ -75,6 +81,8 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 					conf.lineSheetID = row[1]
 				} else if row[0] == configKeyLiteralCommandSheetID {
 					conf.literalCommandSheetID = row[1]
+				} else if row[0] == configKeyOnlineNotify {
+					conf.onlineNotify, _ = strconv.ParseBool(row[1])
 				} else if row[0] == configKeyResidentDiscordChannelID {
 					conf.ResidentDiscordChannelID = row[1]
 				} else if row[0] == configKeyBeamWatchingChannelID {
