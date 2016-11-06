@@ -17,6 +17,7 @@ This is the private robot for projectA discord channel written by Golang.
 [ok] 支援 Beam 或者 hitbox (特定使用者頻道) 開始直播的 Discord 通知。
 [ok] 使用 cid 命令來取得某個 Channel 的 ID。
 [ok] config 現在支援指定 BroadcastChannelID ，設定機器人廣播用頻道。
+[ok] 直播廣播通知現在會先刪除舊的廣播通知，避免太多垃圾洗頻。
 
 config 新增變數 onlineNotify 設定上線時是否發送通知訊息。
 broadcast功能，讓 misty 可以透過命令在管理者頻道內指定 misty 廣播到所有 Broadcast Channel.

@@ -218,6 +218,26 @@ func (misty *Misty) broadcastMessage(message string) {
 	}
 }
 
+// attempt to remove the previous messages with prefix.
+func (misty *Misty) deletePreviousBroadcastMessage(messagePrefix string) {
+	for _, v := range misty.conf.BroadcastDiscrdChannelID {
+		//Get previous messages first.
+		previousMessages, err := misty.session.ChannelMessages(v, 100, "", "")
+		if err == nil {
+			for _, msg := range previousMessages {
+				if strings.HasPrefix(msg.Content, messagePrefix) || strings.Compare(msg.Content, messagePrefix) == 0 {
+					err = misty.session.ChannelMessageDelete(v, msg.ID)
+					if err != nil {
+						fmt.Println(Red("[Error] ") + err.Error())
+					}
+				}
+			}
+		} else {
+			fmt.Println(Red("[Error] ") + err.Error())
+		}
+	}
+}
+
 // GetVars will scan all vars with flag and return them.
 func (misty *Misty) GetVars() {
 	//Parse (read) parmeters.
@@ -434,6 +454,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 
 						informMessage := misty.Line("beamStreamingOnline", 0) + "\n"
 						informMessage += beamChannelURLPrefix + misty.conf.WatchingBeamChannel
+						misty.deletePreviousBroadcastMessage(misty.Line("beamStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
@@ -441,6 +462,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.BeamOnline = false
 						informMessage := misty.Line("beamStreamingOffline", 0)
+						misty.deletePreviousBroadcastMessage(misty.Line("beamStreamingOffline", 0))
 						misty.broadcastMessage(informMessage)
 					}
 				}
@@ -466,6 +488,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 
 						informMessage := misty.Line("hitboxStreamingOnline", 0) + "\n"
 						informMessage += hitboxChannelURLPrefix + misty.conf.WatchingHitboxChannel
+						misty.deletePreviousBroadcastMessage(misty.Line("hitboxStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
@@ -473,6 +496,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.HitboxOnline = false
 						informMessage := misty.Line("hitboxStreamingOffline", 0)
+						misty.deletePreviousBroadcastMessage(misty.Line("hitboxStreamingOffline", 0))
 						misty.broadcastMessage(informMessage)
 					}
 				}
