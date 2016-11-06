@@ -68,6 +68,10 @@ func (conf *botConfig) LiteralCommandSheetURL() string {
 
 // Setup do what it says.
 func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
+
+	//Clear the previous setting.
+	conf.BroadcastDiscrdChannelID = conf.BroadcastDiscrdChannelID[:0]
+
 	// Iterate through tabs.
 	for _, sheetTab := range sheetData {
 		// Iterate through rows.
