@@ -57,18 +57,29 @@ https://discordapp.com/oauth2/authorize?client_id=231105148074721280&scope=bot&p
 //讓 uni 加入自己 server 用的連結
 https://discordapp.com/oauth2/authorize?client_id=240432374574350338&scope=bot&permissions=0
 
-//執行 Misty
-./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y" -c 1H46UgwUKfg7OqE31uxj5ko_B_a_E7Y600W8eM4V2EGI
+//執行 Misty (t 為 bot token / c 為config sheet ID)
+./misty -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.C3QuBA.7tkzubavZB9hKrC-zrforHZSXIs" -c 1H46UgwUKfg7OqE31uxj5ko_B_a_E7Y600W8eM4V2EGI
 or
 ./misty -e [email] -p [password]
 or 
 ./misty -e [email] -p [password] -t "Bot MjMxMTA1MTQ4MDc0NzIxMjgw.Cus7Sw.n-suc_aXypKw-EnkRw8kA3TMU4Y"
 
 //執行Uni
-./misty -t "Bot MjQwNDMyMzc0NTc0MzUwMzM4.CvDPpg.qqrJHoy27PvltMjsbTIFsdg9QpQ" -c 1fBpU4E9vE6BQVYX8ho1GW6NGm-Exg9rzKo4nMWlbcck
+./misty -t "Bot MjQwNDMyMzc0NTc0MzUwMzM4.C3QvFQ.7HGoYZa8xO8hfXrbu1_g1ByW0No" -c 1fBpU4E9vE6BQVYX8ho1GW6NGm-Exg9rzKo4nMWlbcck
 
-使用 tmux 指令來背景常駐運作 misty
+//使用 tmux 指令來背景常駐運作 misty
 tmux 教學: https://gist.github.com/MohamedAlaa/2961058
 
-擴充命令用 Google Sheet
-https://docs.google.com/spreadsheets/d/1haLbQuE7TtF79_J2XLbzFRYbAkfGRCmrXxwdbJ0d724/edit
+//新增 tmux 容器
+tmux new -s misty
+tmux new -s uni
+
+//Detatch
+Ctrl + B -> D
+
+//Misty 設定用 Google Sheet
+https://drive.google.com/drive/u/0/folders/0B7sKFafAb2oudTZuRzJaaExYMVU
+
+//Uni 設定用 Google Sheet
+https://drive.google.com/drive/u/0/folders/0B7sKFafAb2oueE9mLXY1U3dNNEU
+
