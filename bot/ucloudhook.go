@@ -78,8 +78,7 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		// Get the body content.
-
+		// Get the json content.
 		uCloudProjectBuildSuccess := uCloudProjectBuildSuccess{}
 		err = json.Unmarshal(requestByteArray, &uCloudProjectBuildSuccess)
 		if err != nil {
@@ -130,10 +129,10 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 		fmt.Println(Green("[Got Share Link]") + uCloudShareLinkURL + uCloudLinkToShare.ShareID)
 
 		//Broadcast the download info to channel.
-		informNewBuildMessage := misty.Line("uCloudNewBuild", 0) + "\n"
-		informNewBuildMessage += "[" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]\n"
-		informNewBuildMessage += uCloudShareLinkURL + uCloudLinkToShare.ShareID
-		misty.broadcastMessage(informNewBuildMessage)
+		informMessage := misty.Line("uCloudNewBuild", 0) + "\n"
+		informMessage += "[" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]\n"
+		informMessage += uCloudShareLinkURL + uCloudLinkToShare.ShareID
+		misty.broadcastMessage(informMessage)
 
 		return
 	}
