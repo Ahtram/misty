@@ -70,6 +70,9 @@ or
 //使用 tmux 指令來背景常駐運作 misty
 tmux 教學: https://gist.github.com/MohamedAlaa/2961058
 
+切換至pilot 身分執行tmux
+su pilot/pilot
+
 //新增 tmux 容器
 tmux new -s misty
 tmux new -s uni
@@ -82,4 +85,9 @@ https://drive.google.com/drive/u/0/folders/0B7sKFafAb2oudTZuRzJaaExYMVU
 
 //Uni 設定用 Google Sheet
 https://drive.google.com/drive/u/0/folders/0B7sKFafAb2oueE9mLXY1U3dNNEU
+
+Update ubuntu server:
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get dist-upgrade
 

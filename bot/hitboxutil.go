@@ -8,7 +8,7 @@ const hitboxAPIEndPoint = "https://api.hitbox.tv"
 const hitboxChannelURLPrefix = "http://www.hitbox.tv/"
 
 type hitboxChannels struct {
-	Is_live string
+	Islive string `json:"Is_live"`
 }
 
 //isHitboxChannelOnline returns a hitbox channel's online status.
@@ -29,7 +29,7 @@ func isHitboxChannelOnline(channelName string) (isOnline bool, err error) {
 		return
 	}
 
-	if hitboxChannels.Is_live == "1" {
+	if hitboxChannels.Islive == "1" {
 		return true, nil
 	}
 

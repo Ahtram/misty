@@ -52,9 +52,6 @@ func (misty *Misty) Start() error {
 	// Update data.
 	misty.Update()
 
-	// Start observe the watching Beam/hitbox channel.
-	misty.startObserveStreamingStatus()
-
 	// Create a new Discord session using the provided login information.
 	var err error
 	misty.session, err = discordgo.New(misty.Params.Email, misty.Params.Password, misty.Params.Token)
@@ -90,6 +87,12 @@ func (misty *Misty) Start() error {
 		misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("onlineNotify", 0))
 	}
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+
+	// Start observe the watching Beam/hitbox channel.
+	misty.startObserveStreamingStatus()
+
+	//Start the ucloud hook.
+	StartUCloudHook()
 
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
