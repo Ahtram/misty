@@ -92,7 +92,7 @@ func (misty *Misty) Start() error {
 	misty.startObserveStreamingStatus()
 
 	//Start the ucloud hook.
-	StartUCloudHook()
+	misty.StartUCloudHook()
 
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
