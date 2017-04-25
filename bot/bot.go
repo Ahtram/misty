@@ -91,8 +91,10 @@ func (misty *Misty) Start() error {
 	// Start observe the watching Beam/hitbox channel.
 	misty.startObserveStreamingStatus()
 
-	//Start the ucloud hook.
-	misty.StartUCloudHook()
+	//Start the ucloud hook. (check if we have a uCloud End Point and Port setting)
+	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" {
+		misty.StartUCloudHook(misty.conf.UCloudHookEndPoint, misty.conf.UCloudHookPort)
+	}
 
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
