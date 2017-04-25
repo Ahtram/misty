@@ -10,12 +10,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// The hook port we are listening.
+var uCloudHookListenPort = ":48769"
+
 // StartUCloudHook start the ucloud router.
 func StartUCloudHook() {
 	router := httprouter.New()
 	router.GET("/", index)
 	router.POST("/ucloud/projecta", receiveDelivery)
-	log.Fatal(http.ListenAndServe(":80", router))
+	log.Fatal(http.ListenAndServe(uCloudHookListenPort, router))
 }
 
 // index is a blank landing page.
