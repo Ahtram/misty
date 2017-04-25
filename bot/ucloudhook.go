@@ -90,6 +90,7 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 		fmt.Println(Green("[Project Build Success!] [" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]"))
 
 		requestShareLinkURL := uCloudAPIURL + uCloudProjectBuildSuccess.Links.APISelf.Href + "/share"
+
 		// Request a share link.
 		// fmt.Println("Requesting a share link: " + requestShareLinkURL)
 

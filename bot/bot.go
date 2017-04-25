@@ -91,9 +91,16 @@ func (misty *Misty) Start() error {
 	// Start observe the watching Beam/hitbox channel.
 	misty.startObserveStreamingStatus()
 
-	//Start the ucloud hook. (check if we have a uCloud End Point and Port setting)
+	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
 	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" {
 		misty.StartUCloudHook(misty.conf.UCloudHookEndPoint, misty.conf.UCloudHookPort)
+		fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+misty.conf.UCloudHookEndPoint+"] ["+misty.conf.UCloudHookPort+"]"))
+	}
+
+	//Start listen to the GitLab hook.
+	if misty.conf.GitLabHookEndPoint != "" && misty.conf.GitLabHookPort != "" {
+		misty.StartGitLabHook(misty.conf.GitLabHookEndPoint, misty.conf.GitLabHookPort)
+		fmt.Println("Start listen to GitLab hook: " + Yellow("["+misty.conf.GitLabHookEndPoint+"] ["+misty.conf.GitLabHookPort+"]"))
 	}
 
 	// Simple way to keep program running until CTRL-C is pressed.

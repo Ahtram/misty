@@ -15,6 +15,8 @@ const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
 const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
 const configKeyUCloudHookEndPoint = "uCloudHookEndPoint"
 const configKeyUCloudHookPort = "uCloudHookPort"
+const configKeyGitLabHookEndPoint = "gitLabHookEndPoint"
+const configKeyGitLabHookPort = "gitLabHookPort"
 
 // botConfig stores the config values readed from the Google Sheet config file.
 type botConfig struct {
@@ -28,6 +30,8 @@ type botConfig struct {
 	WatchingHitboxChannel    string
 	UCloudHookEndPoint       string
 	UCloudHookPort           string
+	GitLabHookEndPoint       string
+	GitLabHookPort           string
 }
 
 // ToString output the object's content and return as a formated string.
@@ -42,6 +46,8 @@ func (conf *botConfig) ToString() string {
 	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
 	returnString += "UCloudHookEndPoint: [" + conf.UCloudHookEndPoint + "]\n"
 	returnString += "UCloudHookPort: [" + conf.UCloudHookPort + "]\n"
+	returnString += "GitLabHookEndPoint: [" + conf.GitLabHookEndPoint + "]\n"
+	returnString += "GitLabHookPort: [" + conf.GitLabHookPort + "]\n"
 
 	//Due to REST API limitation. Watching multiple channels may not be a good idea...
 	for _, v := range conf.BroadcastDiscrdChannelID {
@@ -107,6 +113,10 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 					conf.UCloudHookEndPoint = row[1]
 				} else if row[0] == configKeyUCloudHookPort {
 					conf.UCloudHookPort = row[1]
+				} else if row[0] == configKeyGitLabHookEndPoint {
+					conf.GitLabHookEndPoint = row[1]
+				} else if row[0] == configKeyGitLabHookPort {
+					conf.GitLabHookPort = row[1]
 				}
 			}
 		}

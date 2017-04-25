@@ -9,14 +9,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// The hook port we are listening.
-var gitLabHookListenPort = ":48770"
-
 // StartGitLabHook start the gitlab router.
-func StartGitLabHook() {
+func (misty *Misty) StartGitLabHook(endPointID string, port string) {
 	router := httprouter.New()
-	router.POST("/gitlab/projecta", receiveGitLabDelivery)
-	log.Fatal(http.ListenAndServe(gitLabHookListenPort, router))
+	router.POST("/gitlab/"+endPointID, receiveGitLabDelivery)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
 // receiveDelivery gets all build event from Unity Cloud.
