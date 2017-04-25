@@ -59,11 +59,11 @@ func (misty *Misty) receiveGitLabDelivery(w http.ResponseWriter, r *http.Request
 	}
 
 	//Broadcast the download info to channel.
-	informMessage := "[" + gitLabPushHook.Project.Name + "] " + misty.Line("gitLabNewRevision", 0) + "\n"
-	informMessage += "```Markdown"
+	informMessage := ":bookmark: [" + gitLabPushHook.Project.Name + "] " + misty.Line("gitLabNewRevision", 0) + "\n"
+	informMessage += "```Markdown\n"
 	for _, commit := range gitLabPushHook.Commits {
 		informMessage += "#[" + commit.TimeStamp + "]\n"
-		informMessage += "    " + commit.Message + "\n"
+		informMessage += "    " + commit.Message
 	}
 	informMessage += "```"
 	misty.broadcastMessage(informMessage)
