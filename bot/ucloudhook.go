@@ -129,8 +129,8 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 		fmt.Println(Green("[Got Share Link]") + uCloudShareLinkURL + uCloudLinkToShare.ShareID)
 
 		//Broadcast the download info to channel.
-		informMessage := misty.Line("uCloudNewBuild", 0) + "\n"
-		informMessage += "[" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]\n"
+		informMessage := ":inbox_tray: " + misty.Line("uCloudNewBuild", 0)
+		informMessage += " [" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]\n"
 		informMessage += uCloudShareLinkURL + uCloudLinkToShare.ShareID
 		misty.broadcastMessage(informMessage)
 
