@@ -67,6 +67,21 @@ func (misty *Misty) Start() error {
 		return err
 	}
 
+	// Start observe the watching Beam/hitbox channel.
+	misty.startObserveStreamingStatus()
+
+	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
+	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" {
+		fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+misty.conf.UCloudHookEndPoint+"] ["+misty.conf.UCloudHookPort+"]"))
+		go misty.StartUCloudHook(misty.conf.UCloudHookEndPoint, misty.conf.UCloudHookPort)
+	}
+
+	//Start listen to the GitLab hook.
+	if misty.conf.GitLabHookEndPoint != "" && misty.conf.GitLabHookPort != "" {
+		fmt.Println("Start listen to GitLab hook: " + Yellow("["+misty.conf.GitLabHookEndPoint+"] ["+misty.conf.GitLabHookPort+"]"))
+		go misty.StartGitLabHook(misty.conf.GitLabHookEndPoint, misty.conf.GitLabHookPort)
+	}
+
 	// Store the account ID for later use.
 	misty.BotID = user.ID
 
@@ -87,21 +102,6 @@ func (misty *Misty) Start() error {
 		misty.session.ChannelMessageSend(misty.conf.ResidentDiscordChannelID, misty.Line("onlineNotify", 0))
 	}
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-
-	// Start observe the watching Beam/hitbox channel.
-	misty.startObserveStreamingStatus()
-
-	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
-	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" {
-		misty.StartUCloudHook(misty.conf.UCloudHookEndPoint, misty.conf.UCloudHookPort)
-		fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+misty.conf.UCloudHookEndPoint+"] ["+misty.conf.UCloudHookPort+"]"))
-	}
-
-	//Start listen to the GitLab hook.
-	if misty.conf.GitLabHookEndPoint != "" && misty.conf.GitLabHookPort != "" {
-		misty.StartGitLabHook(misty.conf.GitLabHookEndPoint, misty.conf.GitLabHookPort)
-		fmt.Println("Start listen to GitLab hook: " + Yellow("["+misty.conf.GitLabHookEndPoint+"] ["+misty.conf.GitLabHookPort+"]"))
-	}
 
 	// Simple way to keep program running until CTRL-C is pressed.
 	<-make(chan struct{})
