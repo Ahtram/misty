@@ -72,7 +72,7 @@ func (gitHubHook *GitHubHook) receiveGiHubDelivery(w http.ResponseWriter, r *htt
 	for _, commit := range gitHubPushHook.Commits {
 		t, _ := time.Parse(time.RFC3339, commit.TimeStamp)
 		informMessage += "#[" + t.Format("2006-01-02 15:04:05") + "] [" + commit.Author.Name + "]\n"
-		informMessage += "    " + commit.Message
+		informMessage += "    " + commit.Message + "\n"
 	}
 	informMessage += "```"
 	gitHubHook.MistyRef.broadcastMessage(informMessage)
