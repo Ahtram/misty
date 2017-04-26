@@ -1,3 +1,5 @@
-This is the private robot for projectA discord channel written by Golang.
+![misty](Images/Misty_Portrait_512.png)
+
+A bot for projectA Discord channel written by Golang.
 
 --
