@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"time"
+
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -69,7 +71,8 @@ func (gitLabHook *GitLabHook) receiveGitLabDelivery(w http.ResponseWriter, r *ht
 	informMessage := ":bookmark: [GitLab] [" + gitLabPushHook.Project.Name + "] " + gitLabHook.MistyRef.Line("gitLabNewRevision", 0) + "\n"
 	informMessage += "```Markdown\n"
 	for _, commit := range gitLabPushHook.Commits {
-		informMessage += "#[" + commit.TimeStamp + "]\n"
+		t, _ := time.Parse(time.RFC3339, commit.TimeStamp)
+		informMessage += "#[" + t.Format("2006-01-02 15:04:05") + "] [" + commit.Author.Name + "]\n"
 		informMessage += "    " + commit.Message
 	}
 	informMessage += "```"
