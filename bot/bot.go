@@ -34,6 +34,10 @@ type Misty struct {
 	lines map[string][]string
 	// Is executing an updating.
 	Updating bool
+	// The Unity Cloud Hooks we are listening.
+	uCloudHooks []*UCloudHook
+	// The GitLab Hooks we are listening.
+	gitLabHooks []*GitLabHook
 }
 
 // Start the bot.
@@ -71,15 +75,30 @@ func (misty *Misty) Start() error {
 	misty.startObserveStreamingStatus()
 
 	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
-	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" {
+	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" && misty.conf.UCloudAccessToken != "" {
 		fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+misty.conf.UCloudHookEndPoint+"] ["+misty.conf.UCloudHookPort+"]"))
-		go misty.StartUCloudHook(misty.conf.UCloudHookEndPoint, misty.conf.UCloudHookPort)
+		uCloudHook := UCloudHook{
+			UCloudHookEndPoint: misty.conf.UCloudHookEndPoint,
+			UCloudHookPort:     misty.conf.UCloudHookPort,
+			UCloudAccessToken:  misty.conf.UCloudAccessToken,
+			MistyRef:           misty,
+		}
+		//Store the hook reference for good.
+		misty.uCloudHooks = append(misty.uCloudHooks, &uCloudHook)
+		go uCloudHook.StartUCloudHook()
 	}
 
 	//Start listen to the GitLab hook.
 	if misty.conf.GitLabHookEndPoint != "" && misty.conf.GitLabHookPort != "" {
 		fmt.Println("Start listen to GitLab hook: " + Yellow("["+misty.conf.GitLabHookEndPoint+"] ["+misty.conf.GitLabHookPort+"]"))
-		go misty.StartGitLabHook(misty.conf.GitLabHookEndPoint, misty.conf.GitLabHookPort)
+		gitLabHook := GitLabHook{
+			GitLabHookEndPoint: misty.conf.GitLabHookEndPoint,
+			GitLabHookPort:     misty.conf.GitLabHookPort,
+			MistyRef:           misty,
+		}
+		//Store the hook reference for good.
+		misty.gitLabHooks = append(misty.gitLabHooks, &gitLabHook)
+		go gitLabHook.StartGitLabHook()
 	}
 
 	// Store the account ID for later use.

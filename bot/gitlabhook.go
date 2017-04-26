@@ -10,6 +10,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// GitLabHook represents a GitLab hook we are listening.
+type GitLabHook struct {
+	GitLabHookEndPoint string
+	GitLabHookPort     string
+	MistyRef           *Misty
+}
+
 type gitLabPushHook struct {
 	Project          gitLabProject  `json:"project"`
 	Commits          []gitLabCommit `json:"commits"`
@@ -35,14 +42,14 @@ type gitLabAuthor struct {
 }
 
 // StartGitLabHook start the gitlab router.
-func (misty *Misty) StartGitLabHook(endPointID string, port string) {
+func (gitLabHook *GitLabHook) StartGitLabHook() {
 	router := httprouter.New()
-	router.POST("/gitlab/"+endPointID, misty.receiveGitLabDelivery)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	router.POST(gitLabHook.GitLabHookEndPoint, gitLabHook.receiveGitLabDelivery)
+	log.Fatal(http.ListenAndServe(":"+gitLabHook.GitLabHookPort, router))
 }
 
 // receiveDelivery gets all build event from Unity Cloud.
-func (misty *Misty) receiveGitLabDelivery(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (gitLabHook *GitLabHook) receiveGitLabDelivery(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get the body content.
 	requestByteArray, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -59,12 +66,12 @@ func (misty *Misty) receiveGitLabDelivery(w http.ResponseWriter, r *http.Request
 	}
 
 	//Broadcast the download info to channel.
-	informMessage := ":bookmark: [" + gitLabPushHook.Project.Name + "] " + misty.Line("gitLabNewRevision", 0) + "\n"
+	informMessage := ":bookmark: [" + gitLabPushHook.Project.Name + "] " + gitLabHook.MistyRef.Line("gitLabNewRevision", 0) + "\n"
 	informMessage += "```Markdown\n"
 	for _, commit := range gitLabPushHook.Commits {
 		informMessage += "#[" + commit.TimeStamp + "]\n"
 		informMessage += "    " + commit.Message
 	}
 	informMessage += "```"
-	misty.broadcastMessage(informMessage)
+	gitLabHook.MistyRef.broadcastMessage(informMessage)
 }

@@ -21,11 +21,17 @@ var uCloudAccessToken = "f82a9507bb519996aadbe2caebe4cc51"
 
 var uCloudAPIURL = "https://build-api.cloud.unity3d.com"
 
-// var uCloudOrgID = "teamuni"
-// var uCloudProjectID = "projecta"  (Moved to config)
 var uCloudProjectBuildSuccessEvent = "ProjectBuildSuccess"
 
 var uCloudShareLinkURL = "https://developer.cloud.unity3d.com/share/"
+
+// UCloudHook represents an Unity cloud hook we are listening.
+type UCloudHook struct {
+	UCloudHookEndPoint string
+	UCloudHookPort     string
+	UCloudAccessToken  string
+	MistyRef           *Misty
+}
 
 type uCloudProjectBuildSuccess struct {
 	ProjectName       string                         `json:"projectName"`
@@ -59,14 +65,14 @@ type uCloudLinkToShare struct {
 }
 
 // StartUCloudHook start the ucloud router.
-func (misty *Misty) StartUCloudHook(endPointID string, port string) {
+func (uCloudHook *UCloudHook) StartUCloudHook() {
 	router := httprouter.New()
-	router.POST("/ucloud/"+endPointID, misty.receiveUCloudDelivery)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	router.POST(uCloudHook.UCloudHookEndPoint, uCloudHook.receiveUCloudDelivery)
+	log.Fatal(http.ListenAndServe(":"+uCloudHook.UCloudHookPort, router))
 }
 
 // receiveDelivery gets all build event from Unity Cloud.
-func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (uCloudHook *UCloudHook) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Check if this is a build success notification. (Header)
 	event := r.Header.Get("X-Unitycloudbuild-Event")
 	if strings.Compare(event, uCloudProjectBuildSuccessEvent) == 0 {
@@ -98,7 +104,7 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 			fmt.Println(Red("[POST Request Error] ") + err.Error())
 			return
 		}
-		shareLinkRequest.Header.Set("Authorization", "Basic "+uCloudAccessToken)
+		shareLinkRequest.Header.Set("Authorization", "Basic "+uCloudHook.UCloudAccessToken)
 		shareLinkRequest.Header.Set("Content-Type", "application/json")
 		client := http.Client{}
 		shareLinkResp, err := client.Do(shareLinkRequest)
@@ -129,10 +135,10 @@ func (misty *Misty) receiveUCloudDelivery(w http.ResponseWriter, r *http.Request
 		fmt.Println(Green("[Got Share Link]") + uCloudShareLinkURL + uCloudLinkToShare.ShareID)
 
 		//Broadcast the download info to channel.
-		informMessage := ":inbox_tray: " + misty.Line("uCloudNewBuild", 0)
+		informMessage := ":inbox_tray: " + uCloudHook.MistyRef.Line("uCloudNewBuild", 0)
 		informMessage += " [" + uCloudProjectBuildSuccess.ProjectName + "] [" + uCloudProjectBuildSuccess.BuildTargetName + "] [" + strconv.Itoa(uCloudProjectBuildSuccess.BuildNumber) + "]\n"
 		informMessage += uCloudShareLinkURL + uCloudLinkToShare.ShareID
-		misty.broadcastMessage(informMessage)
+		uCloudHook.MistyRef.broadcastMessage(informMessage)
 
 		return
 	}
