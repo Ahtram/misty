@@ -17,7 +17,8 @@
 [ok] config 現在支援指定 BroadcastChannelID ，設定機器人廣播用頻道。
 [ok] 直播廣播通知現在會先刪除舊的廣播通知，避免太多垃圾洗頻。
 [ok] config 新增變數 onlineNotify 設定上線時是否發送通知訊息。
-broadcast功能，讓 misty 可以透過命令在管理者頻道內指定 misty 廣播到所有 Broadcast Channel.
+[ok] broadcast功能，讓 misty 可以透過命令在管理者頻道內指定 misty 廣播到所有 Broadcast Channel.
+
 限定特定頻道才能對 Misty 使用特定的管理者 Command. (update/broadcast) (權限)
 支援 misty 開啟時設定語系。
 支援 misty 在執行時期可以接受命令更換語系。
