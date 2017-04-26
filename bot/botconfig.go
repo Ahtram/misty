@@ -15,6 +15,7 @@ const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
 const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
 const configKeyUCloudHookEndPoint = "uCloudHookEndPoint"
 const configKeyGitLabHookEndPoint = "gitLabHookEndPoint"
+const configKeyGitHubHookEndPoint = "gitHubHookEndPoint"
 
 // botConfig stores the config values readed from the Google Sheet config file.
 type botConfig struct {
@@ -28,6 +29,7 @@ type botConfig struct {
 	WatchingHitboxChannel    string
 	UCloudConfigs            []*uCloudConfig
 	GitLabConfigs            []*gitLabConfig
+	GitHubConfigs            []*gitHubConfig
 }
 
 type uCloudConfig struct {
@@ -39,6 +41,11 @@ type uCloudConfig struct {
 type gitLabConfig struct {
 	GitLabHookEndPoint string
 	GitLabHookPort     string
+}
+
+type gitHubConfig struct {
+	GitHubHookEndPoint string
+	GitHubHookPort     string
 }
 
 // ToString output the object's content and return as a formated string.
@@ -56,6 +63,9 @@ func (conf *botConfig) ToString() string {
 	}
 	for _, value := range conf.GitLabConfigs {
 		returnString += "GitLabConfig: [" + value.GitLabHookEndPoint + "] [" + value.GitLabHookPort + "] \n"
+	}
+	for _, value := range conf.GitHubConfigs {
+		returnString += "GitHubConfig: [" + value.GitHubHookEndPoint + "] [" + value.GitHubHookPort + "] \n"
 	}
 
 	//Due to REST API limitation. Watching multiple channels may not be a good idea...
@@ -131,6 +141,12 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 						GitLabHookPort:     row[2],
 					}
 					conf.GitLabConfigs = append(conf.GitLabConfigs, &gitLabConfig)
+				} else if row[0] == configKeyGitHubHookEndPoint {
+					gitHubConfig := gitHubConfig{
+						GitHubHookEndPoint: row[1],
+						GitHubHookPort:     row[2],
+					}
+					conf.GitHubConfigs = append(conf.GitHubConfigs, &gitHubConfig)
 				}
 			}
 		}

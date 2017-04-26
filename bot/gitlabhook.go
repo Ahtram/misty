@@ -68,7 +68,7 @@ func (gitLabHook *GitLabHook) receiveGitLabDelivery(w http.ResponseWriter, r *ht
 	}
 
 	//Broadcast the download info to channel.
-	informMessage := ":bookmark: [GitLab] [" + gitLabPushHook.Project.Name + "] " + gitLabHook.MistyRef.Line("gitLabNewRevision", 0) + "\n"
+	informMessage := ":bookmark: [GitLab] [" + gitLabPushHook.Project.Name + "] " + gitLabHook.MistyRef.Line("newRevision", 0) + "\n"
 	informMessage += "```Markdown\n"
 	for _, commit := range gitLabPushHook.Commits {
 		t, _ := time.Parse(time.RFC3339, commit.TimeStamp)

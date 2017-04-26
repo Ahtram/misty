@@ -38,6 +38,8 @@ type Misty struct {
 	uCloudHooks []*UCloudHook
 	// The GitLab Hooks we are listening.
 	gitLabHooks []*GitLabHook
+	// The GitHub Hooks we are listening.
+	gitHubHooks []*GitHubHook
 }
 
 // Start the bot.
@@ -74,7 +76,7 @@ func (misty *Misty) Start() error {
 	// Start observe the watching Beam/hitbox channel.
 	misty.startObserveStreamingStatus()
 
-	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
+	//Start listen to the Unity Cloud hooks. (check if we have a uCloud End Point and Port setting)
 	for _, value := range misty.conf.UCloudConfigs {
 		if value.UCloudHookEndPoint != "" && value.UCloudHookPort != "" && value.UCloudAccessToken != "" {
 			fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+value.UCloudHookEndPoint+"] ["+value.UCloudHookPort+"]"))
@@ -90,7 +92,7 @@ func (misty *Misty) Start() error {
 		}
 	}
 
-	//Start listen to the GitLab hook.
+	//Start listen to the GitLab hooks.
 	for _, value := range misty.conf.GitLabConfigs {
 		if value.GitLabHookEndPoint != "" && value.GitLabHookPort != "" {
 			fmt.Println("Start listen to GitLab hook: " + Yellow("["+value.GitLabHookEndPoint+"] ["+value.GitLabHookPort+"]"))
@@ -102,6 +104,21 @@ func (misty *Misty) Start() error {
 			//Store the hook reference for good.
 			misty.gitLabHooks = append(misty.gitLabHooks, &gitLabHook)
 			go gitLabHook.StartGitLabHook()
+		}
+	}
+
+	//Start listen to the GitHub hooks.
+	for _, value := range misty.conf.GitHubConfigs {
+		if value.GitHubHookEndPoint != "" && value.GitHubHookPort != "" {
+			fmt.Println("Start listen to GitHub hook: " + Yellow("["+value.GitHubHookEndPoint+"] ["+value.GitHubHookPort+"]"))
+			gitHubHook := GitHubHook{
+				GitHubHookEndPoint: value.GitHubHookEndPoint,
+				GitHubHookPort:     value.GitHubHookPort,
+				MistyRef:           misty,
+			}
+			//Store the hook reference for good.
+			misty.gitHubHooks = append(misty.gitHubHooks, &gitHubHook)
+			go gitHubHook.StartGitHubHook()
 		}
 	}
 
