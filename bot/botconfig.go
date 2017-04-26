@@ -26,11 +26,19 @@ type botConfig struct {
 	BroadcastDiscrdChannelID []string
 	WatchingBeamChannel      string
 	WatchingHitboxChannel    string
-	UCloudHookEndPoint       string
-	UCloudHookPort           string
-	UCloudAccessToken        string
-	GitLabHookEndPoint       string
-	GitLabHookPort           string
+	UCloudConfigs            []*uCloudConfig
+	GitLabConfigs            []*gitLabConfig
+}
+
+type uCloudConfig struct {
+	UCloudHookEndPoint string
+	UCloudHookPort     string
+	UCloudAccessToken  string
+}
+
+type gitLabConfig struct {
+	GitLabHookEndPoint string
+	GitLabHookPort     string
 }
 
 // ToString output the object's content and return as a formated string.
@@ -43,11 +51,12 @@ func (conf *botConfig) ToString() string {
 	returnString += "ResidentDiscordChannelID: [" + conf.ResidentDiscordChannelID + "]\n"
 	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
 	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
-	returnString += "UCloudHookEndPoint: [" + conf.UCloudHookEndPoint + "]\n"
-	returnString += "UCloudHookPort: [" + conf.UCloudHookPort + "]\n"
-	returnString += "UCloudAccessToken: [" + conf.UCloudAccessToken + "]\n"
-	returnString += "GitLabHookEndPoint: [" + conf.GitLabHookEndPoint + "]\n"
-	returnString += "GitLabHookPort: [" + conf.GitLabHookPort + "]\n"
+	for _, value := range conf.UCloudConfigs {
+		returnString += "UCloudConfig: [" + value.UCloudHookEndPoint + "] [" + value.UCloudHookPort + "] [" + value.UCloudAccessToken + "] \n"
+	}
+	for _, value := range conf.GitLabConfigs {
+		returnString += "GitLabConfig: [" + value.GitLabHookEndPoint + "] [" + value.GitLabHookPort + "] \n"
+	}
 
 	//Due to REST API limitation. Watching multiple channels may not be a good idea...
 	for _, v := range conf.BroadcastDiscrdChannelID {
@@ -110,12 +119,18 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 						conf.BroadcastDiscrdChannelID = append(conf.BroadcastDiscrdChannelID, row[1])
 					}
 				} else if row[0] == configKeyUCloudHookEndPoint {
-					conf.UCloudHookEndPoint = row[1]
-					conf.UCloudHookPort = row[2]
-					conf.UCloudAccessToken = row[3]
+					uCloudConfig := uCloudConfig{
+						UCloudHookEndPoint: row[1],
+						UCloudHookPort:     row[2],
+						UCloudAccessToken:  row[3],
+					}
+					conf.UCloudConfigs = append(conf.UCloudConfigs, &uCloudConfig)
 				} else if row[0] == configKeyGitLabHookEndPoint {
-					conf.GitLabHookEndPoint = row[1]
-					conf.GitLabHookPort = row[2]
+					gitLabConfig := gitLabConfig{
+						GitLabHookEndPoint: row[1],
+						GitLabHookPort:     row[2],
+					}
+					conf.GitLabConfigs = append(conf.GitLabConfigs, &gitLabConfig)
 				}
 			}
 		}

@@ -75,30 +75,34 @@ func (misty *Misty) Start() error {
 	misty.startObserveStreamingStatus()
 
 	//Start listen to the Unity Cloud hook. (check if we have a uCloud End Point and Port setting)
-	if misty.conf.UCloudHookEndPoint != "" && misty.conf.UCloudHookPort != "" && misty.conf.UCloudAccessToken != "" {
-		fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+misty.conf.UCloudHookEndPoint+"] ["+misty.conf.UCloudHookPort+"]"))
-		uCloudHook := UCloudHook{
-			UCloudHookEndPoint: misty.conf.UCloudHookEndPoint,
-			UCloudHookPort:     misty.conf.UCloudHookPort,
-			UCloudAccessToken:  misty.conf.UCloudAccessToken,
-			MistyRef:           misty,
+	for _, value := range misty.conf.UCloudConfigs {
+		if value.UCloudHookEndPoint != "" && value.UCloudHookPort != "" && value.UCloudAccessToken != "" {
+			fmt.Println("Start listen to Unity Cloud hook: " + Yellow("["+value.UCloudHookEndPoint+"] ["+value.UCloudHookPort+"]"))
+			uCloudHook := UCloudHook{
+				UCloudHookEndPoint: value.UCloudHookEndPoint,
+				UCloudHookPort:     value.UCloudHookPort,
+				UCloudAccessToken:  value.UCloudAccessToken,
+				MistyRef:           misty,
+			}
+			//Store the hook reference for good.
+			misty.uCloudHooks = append(misty.uCloudHooks, &uCloudHook)
+			go uCloudHook.StartUCloudHook()
 		}
-		//Store the hook reference for good.
-		misty.uCloudHooks = append(misty.uCloudHooks, &uCloudHook)
-		go uCloudHook.StartUCloudHook()
 	}
 
 	//Start listen to the GitLab hook.
-	if misty.conf.GitLabHookEndPoint != "" && misty.conf.GitLabHookPort != "" {
-		fmt.Println("Start listen to GitLab hook: " + Yellow("["+misty.conf.GitLabHookEndPoint+"] ["+misty.conf.GitLabHookPort+"]"))
-		gitLabHook := GitLabHook{
-			GitLabHookEndPoint: misty.conf.GitLabHookEndPoint,
-			GitLabHookPort:     misty.conf.GitLabHookPort,
-			MistyRef:           misty,
+	for _, value := range misty.conf.GitLabConfigs {
+		if value.GitLabHookEndPoint != "" && value.GitLabHookPort != "" {
+			fmt.Println("Start listen to GitLab hook: " + Yellow("["+value.GitLabHookEndPoint+"] ["+value.GitLabHookPort+"]"))
+			gitLabHook := GitLabHook{
+				GitLabHookEndPoint: value.GitLabHookEndPoint,
+				GitLabHookPort:     value.GitLabHookPort,
+				MistyRef:           misty,
+			}
+			//Store the hook reference for good.
+			misty.gitLabHooks = append(misty.gitLabHooks, &gitLabHook)
+			go gitLabHook.StartGitLabHook()
 		}
-		//Store the hook reference for good.
-		misty.gitLabHooks = append(misty.gitLabHooks, &gitLabHook)
-		go gitLabHook.StartGitLabHook()
 	}
 
 	// Store the account ID for later use.
