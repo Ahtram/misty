@@ -562,7 +562,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 		for _ = range twitchTicker.C {
 			//Prevent observing when the bot is updating or do not have a Twitch channel name.
 			if !misty.Updating && misty.conf.WatchingTwitchChannel != "" {
-				isOnline, err := isTwitchChannelOnline(misty.conf.WatchingTwitchChannel)
+				isOnline, previewURL, err := isTwitchChannelOnline(misty.conf.WatchingTwitchChannel)
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -574,6 +574,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 
 						informMessage := misty.Line("twitchStreamingOnline", 0) + "\n"
 						informMessage += twitchChannelURLPrefix + misty.conf.WatchingTwitchChannel
+						informMessage += previewURL
 						misty.deletePreviousBroadcastMessage(misty.Line("twitchStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
@@ -581,7 +582,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 					if misty.streamingStatus.TwitchOnline {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.TwitchOnline = false
-						informMessage := misty.Line("twitchStreamingOffline", 0)
+						informMessage := misty.Line("twitchStreamingOffline", 0) + "\n"
 						misty.deletePreviousBroadcastMessage(misty.Line("twitchStreamingOffline", 0))
 						misty.broadcastMessage(informMessage)
 					}
