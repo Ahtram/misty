@@ -13,6 +13,7 @@ const configKeyResidentDiscordChannelID = "residentDiscordChannelID"
 const configKeyBroadcastDiscordChannelID = "broadcastDiscordChannelID"
 const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
 const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
+const configKeyTwitchWatchingChannelID = "twitchWatchingChannelID"
 const configKeyUCloudHookEndPoint = "uCloudHookEndPoint"
 const configKeyGitLabHookEndPoint = "gitLabHookEndPoint"
 const configKeyGitHubHookEndPoint = "gitHubHookEndPoint"
@@ -27,6 +28,7 @@ type botConfig struct {
 	BroadcastDiscrdChannelID []string
 	WatchingBeamChannel      string
 	WatchingHitboxChannel    string
+	WatchingTwitchChannel    string
 	UCloudConfigs            []*uCloudConfig
 	GitLabConfigs            []*gitLabConfig
 	GitHubConfigs            []*gitHubConfig
@@ -58,6 +60,7 @@ func (conf *botConfig) ToString() string {
 	returnString += "ResidentDiscordChannelID: [" + conf.ResidentDiscordChannelID + "]\n"
 	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
 	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
+	returnString += "WatchingTwitchChannel: [" + conf.WatchingTwitchChannel + "]\n"
 	for _, value := range conf.UCloudConfigs {
 		returnString += "UCloudConfig: [" + value.UCloudHookEndPoint + "] [" + value.UCloudHookPort + "] [" + value.UCloudAccessToken + "] \n"
 	}
@@ -124,6 +127,8 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 					conf.WatchingBeamChannel = row[1]
 				} else if row[0] == configKeyHitboxWatchingChannelID {
 					conf.WatchingHitboxChannel = row[1]
+				} else if row[0] == configKeyTwitchWatchingChannelID {
+					conf.WatchingTwitchChannel = row[1]
 				} else if row[0] == configKeyBroadcastDiscordChannelID {
 					if row[1] != "" {
 						conf.BroadcastDiscrdChannelID = append(conf.BroadcastDiscrdChannelID, row[1])

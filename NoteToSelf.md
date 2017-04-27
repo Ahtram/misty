@@ -26,6 +26,9 @@
 
 讀取TET的資料表單，提供玩家查詢遊戲內的合成公式或者道具資訊(尚未確定)。
 
+Twitch API URL Root
+https://api.twitch.tv/kraken
+
 --
 
 Below is just some random note text for me to remember things that's not so important so please ignore it.
@@ -89,3 +92,5 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get dist-upgrade
 
+t s
+9x0pqnylwo29q3otad4k88e1x8t1ge

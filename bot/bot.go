@@ -555,4 +555,39 @@ func (misty *Misty) startObserveStreamingStatus() {
 			}
 		}
 	}()
+
+	//Observe the watching Twitch channel.
+	twitchTicker := time.NewTicker(time.Second * 10)
+	go func() {
+		for _ = range twitchTicker.C {
+			//Prevent observing when the bot is updating or do not have a Twitch channel name.
+			if !misty.Updating && misty.conf.WatchingTwitchChannel != "" {
+				isOnline, err := isTwitchChannelOnline(misty.conf.WatchingTwitchChannel)
+				if err != nil {
+					fmt.Println(err)
+				}
+				//Compare to the cache status vars.
+				if isOnline {
+					if !misty.streamingStatus.TwitchOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.TwitchOnline = true
+
+						informMessage := misty.Line("twitchStreamingOnline", 0) + "\n"
+						informMessage += twitchChannelURLPrefix + misty.conf.WatchingTwitchChannel
+						misty.deletePreviousBroadcastMessage(misty.Line("twitchStreamingOnline", 0))
+						misty.broadcastMessage(informMessage)
+					} //Okey. Do nothing.
+				} else {
+					if misty.streamingStatus.TwitchOnline {
+						//Watching channel become online. Inform this in the resident channel.
+						misty.streamingStatus.TwitchOnline = false
+						informMessage := misty.Line("twitchStreamingOffline", 0)
+						misty.deletePreviousBroadcastMessage(misty.Line("twitchStreamingOffline", 0))
+						misty.broadcastMessage(informMessage)
+					}
+				}
+			}
+		}
+	}()
+
 }

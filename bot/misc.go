@@ -102,4 +102,5 @@ func fetchFeed(feedURL string) (content string, err error) {
 type streamingStatusCache struct {
 	BeamOnline   bool
 	HitboxOnline bool
+	TwitchOnline bool
 }
