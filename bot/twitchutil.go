@@ -35,7 +35,7 @@ type twitchPreview struct {
 }
 
 //isTwitchChannelOnline returns a Twitch channel's online status.
-func isTwitchChannelOnline(channelName string) (isOnline bool, previewURL string, err error) {
+func isTwitchChannelOnline(channelName string) (isOnline bool, err error) {
 	request, err := http.NewRequest("GET", twitchAPIEndPoint+"/streams/"+channelName, nil)
 	if err != nil {
 		fmt.Println(Red("[POST Request Error] ") + err.Error())
@@ -62,7 +62,7 @@ func isTwitchChannelOnline(channelName string) (isOnline bool, previewURL string
 	}
 
 	if twitchStreams.Stream.Channel.Status != "" {
-		return true, twitchStreams.Stream.Preview.Small, nil
+		return true, nil
 	}
 
 	return
