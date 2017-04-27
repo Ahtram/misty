@@ -571,10 +571,9 @@ func (misty *Misty) startObserveStreamingStatus() {
 					if !misty.streamingStatus.TwitchOnline {
 						//Watching channel become online. Inform this in the resident channel.
 						misty.streamingStatus.TwitchOnline = true
-
 						informMessage := misty.Line("twitchStreamingOnline", 0) + "\n"
+						informMessage += previewURL + "\n"
 						informMessage += twitchChannelURLPrefix + misty.conf.WatchingTwitchChannel
-						informMessage += previewURL
 						misty.deletePreviousBroadcastMessage(misty.Line("twitchStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
