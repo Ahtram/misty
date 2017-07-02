@@ -11,6 +11,7 @@ type beamChannels struct {
 	Online bool
 }
 
+//[Deprecated]
 //isBeamChannelOnline returns a Beam channel's online status.
 func isBeamChannelOnline(channelName string) (isOnline bool, err error) {
 	resp, err := http.Get(beamAPIEndPoint + "/channels/" + channelName)

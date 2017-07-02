@@ -73,7 +73,7 @@ func (misty *Misty) Start() error {
 		return err
 	}
 
-	// Start observe the watching Beam/hitbox channel.
+	// Start observe the watching streaming channel.
 	misty.startObserveStreamingStatus()
 
 	//Start listen to the Unity Cloud hooks. (check if we have a uCloud End Point and Port setting)
@@ -274,7 +274,7 @@ func (misty *Misty) broadcastMessage(message string) {
 func (misty *Misty) deletePreviousBroadcastMessage(messagePrefix string) {
 	for _, v := range misty.conf.BroadcastDiscrdChannelID {
 		//Get previous messages first.
-		previousMessages, err := misty.session.ChannelMessages(v, 100, "", "")
+		previousMessages, err := misty.session.ChannelMessages(v, 100, "", "", "")
 		if err == nil {
 			for _, msg := range previousMessages {
 				if strings.HasPrefix(msg.Content, messagePrefix) || strings.Compare(msg.Content, messagePrefix) == 0 {
@@ -488,7 +488,7 @@ func (misty *Misty) syncLiteralCommands() {
 }
 
 func (misty *Misty) startObserveStreamingStatus() {
-	//Observe the watching Beam channel.
+	//Observe the watching mixer channel.
 	beamTicker := time.NewTicker(time.Second * 3)
 	go func() {
 		for _ = range beamTicker.C {

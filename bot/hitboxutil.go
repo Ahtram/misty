@@ -11,6 +11,7 @@ type hitboxChannels struct {
 	Islive string `json:"Is_live"`
 }
 
+//[Deprecated]
 //isHitboxChannelOnline returns a hitbox channel's online status.
 func isHitboxChannelOnline(channelName string) (isOnline bool, err error) {
 	resp, err := http.Get(hitboxAPIEndPoint + "/user/" + channelName)
