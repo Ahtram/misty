@@ -489,32 +489,32 @@ func (misty *Misty) syncLiteralCommands() {
 
 func (misty *Misty) startObserveStreamingStatus() {
 	//Observe the watching mixer channel.
-	beamTicker := time.NewTicker(time.Second * 3)
+	mixerTicker := time.NewTicker(time.Second * 3)
 	go func() {
-		for _ = range beamTicker.C {
-			//Prevent observing when the bot is updating or do not have a Beam channel name.
-			if !misty.Updating && misty.conf.WatchingBeamChannel != "" {
-				isOnline, err := isBeamChannelOnline(misty.conf.WatchingBeamChannel)
+		for _ = range mixerTicker.C {
+			//Prevent observing when the bot is updating or do not have a Mixer channel name.
+			if !misty.Updating && misty.conf.WatchingMixerChannel != "" {
+				isOnline, err := isMixerChannelOnline(misty.conf.WatchingMixerChannel)
 				if err != nil {
 					fmt.Println(err)
 				}
 				//Compare to the cache status vars.
 				if isOnline {
-					if !misty.streamingStatus.BeamOnline {
+					if !misty.streamingStatus.MixerOnline {
 						//Watching channel become online. Inform this in the resident channel.
-						misty.streamingStatus.BeamOnline = true
+						misty.streamingStatus.MixerOnline = true
 
-						informMessage := misty.Line("beamStreamingOnline", 0) + "\n"
-						informMessage += beamChannelURLPrefix + misty.conf.WatchingBeamChannel
-						misty.deletePreviousBroadcastMessage(misty.Line("beamStreamingOnline", 0))
+						informMessage := misty.Line("mixerStreamingOnline", 0) + "\n"
+						informMessage += mixerChannelURLPrefix + misty.conf.WatchingMixerChannel
+						misty.deletePreviousBroadcastMessage(misty.Line("mixerStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
-					if misty.streamingStatus.BeamOnline {
+					if misty.streamingStatus.MixerOnline {
 						//Watching channel become online. Inform this in the resident channel.
-						misty.streamingStatus.BeamOnline = false
-						informMessage := misty.Line("beamStreamingOffline", 0)
-						misty.deletePreviousBroadcastMessage(misty.Line("beamStreamingOffline", 0))
+						misty.streamingStatus.MixerOnline = false
+						informMessage := misty.Line("mixerStreamingOffline", 0)
+						misty.deletePreviousBroadcastMessage(misty.Line("mixerStreamingOffline", 0))
 						misty.broadcastMessage(informMessage)
 					}
 				}
@@ -522,33 +522,33 @@ func (misty *Misty) startObserveStreamingStatus() {
 		}
 	}()
 
-	//Observe the watching Hitbox channel.
-	hitboxTicker := time.NewTicker(time.Second * 40)
+	//Observe the watching Smashcast channel.
+	smashcastTicker := time.NewTicker(time.Second * 40)
 	go func() {
-		for _ = range hitboxTicker.C {
-			//Prevent observing when the bot is updating or do not have a Hitbox channel name.
-			if !misty.Updating && misty.conf.WatchingHitboxChannel != "" {
-				isOnline, err := isHitboxChannelOnline(misty.conf.WatchingHitboxChannel)
+		for _ = range smashcastTicker.C {
+			//Prevent observing when the bot is updating or do not have a Smashcast channel name.
+			if !misty.Updating && misty.conf.WatchingSmashcastChannel != "" {
+				isOnline, err := isSmashcastChannelOnline(misty.conf.WatchingSmashcastChannel)
 				if err != nil {
 					fmt.Println(err)
 				}
 				//Compare to the cache status vars.
 				if isOnline {
-					if !misty.streamingStatus.HitboxOnline {
+					if !misty.streamingStatus.SmashcastOnline {
 						//Watching channel become online. Inform this in the resident channel.
-						misty.streamingStatus.HitboxOnline = true
+						misty.streamingStatus.SmashcastOnline = true
 
-						informMessage := misty.Line("hitboxStreamingOnline", 0) + "\n"
-						informMessage += hitboxChannelURLPrefix + misty.conf.WatchingHitboxChannel
-						misty.deletePreviousBroadcastMessage(misty.Line("hitboxStreamingOnline", 0))
+						informMessage := misty.Line("smashcastStreamingOnline", 0) + "\n"
+						informMessage += smashcastChannelURLPrefix + misty.conf.WatchingSmashcastChannel
+						misty.deletePreviousBroadcastMessage(misty.Line("smashcastStreamingOnline", 0))
 						misty.broadcastMessage(informMessage)
 					} //Okey. Do nothing.
 				} else {
-					if misty.streamingStatus.HitboxOnline {
+					if misty.streamingStatus.SmashcastOnline {
 						//Watching channel become online. Inform this in the resident channel.
-						misty.streamingStatus.HitboxOnline = false
-						informMessage := misty.Line("hitboxStreamingOffline", 0)
-						misty.deletePreviousBroadcastMessage(misty.Line("hitboxStreamingOffline", 0))
+						misty.streamingStatus.SmashcastOnline = false
+						informMessage := misty.Line("smashcastStreamingOffline", 0)
+						misty.deletePreviousBroadcastMessage(misty.Line("smashcastStreamingOffline", 0))
 						misty.broadcastMessage(informMessage)
 					}
 				}

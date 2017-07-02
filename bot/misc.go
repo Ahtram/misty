@@ -11,7 +11,7 @@ import (
 
 //Version number and program name define.
 const programName = "Misty"
-const version = "0.4.0.6"
+const version = "0.4.1.0"
 
 // Mag = Magenta Color
 var Mag = color.New(color.FgHiMagenta).SprintFunc()
@@ -100,7 +100,7 @@ func fetchFeed(feedURL string) (content string, err error) {
 //==========================
 
 type streamingStatusCache struct {
-	BeamOnline   bool
-	HitboxOnline bool
-	TwitchOnline bool
+	MixerOnline     bool
+	SmashcastOnline bool
+	TwitchOnline    bool
 }

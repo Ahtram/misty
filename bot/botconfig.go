@@ -11,8 +11,8 @@ const configKeyLiteralCommandSheetID = "literalCommandSheetID"
 const configKeyOnlineNotify = "onlineNotify"
 const configKeyResidentDiscordChannelID = "residentDiscordChannelID"
 const configKeyBroadcastDiscordChannelID = "broadcastDiscordChannelID"
-const configKeyBeamWatchingChannelID = "beamWatchingChannelID"
-const configKeyHitboxWatchingChannelID = "hitboxWatchingChannelID"
+const configKeyMixerWatchingChannelID = "mixerWatchingChannelID"
+const configKeySmashcastWatchingChannelID = "smashcastWatchingChannelID"
 const configKeyTwitchWatchingChannelID = "twitchWatchingChannelID"
 const configKeyUCloudHookEndPoint = "uCloudHookEndPoint"
 const configKeyGitLabHookEndPoint = "gitLabHookEndPoint"
@@ -26,8 +26,8 @@ type botConfig struct {
 	onlineNotify             bool
 	ResidentDiscordChannelID string
 	BroadcastDiscrdChannelID []string
-	WatchingBeamChannel      string
-	WatchingHitboxChannel    string
+	WatchingMixerChannel     string
+	WatchingSmashcastChannel string
 	WatchingTwitchChannel    string
 	UCloudConfigs            []*uCloudConfig
 	GitLabConfigs            []*gitLabConfig
@@ -58,8 +58,8 @@ func (conf *botConfig) ToString() string {
 	returnString += "literalCommandSheetID: [" + conf.literalCommandSheetID + "]\n"
 	returnString += "onlineNotify: [" + strconv.FormatBool(conf.onlineNotify) + "]\n"
 	returnString += "ResidentDiscordChannelID: [" + conf.ResidentDiscordChannelID + "]\n"
-	returnString += "WatchingBeamChannel: [" + conf.WatchingBeamChannel + "]\n"
-	returnString += "WatchingHitboxChannel: [" + conf.WatchingHitboxChannel + "]\n"
+	returnString += "WatchingMixerChannel: [" + conf.WatchingMixerChannel + "]\n"
+	returnString += "WatchingSmashcastChannel: [" + conf.WatchingSmashcastChannel + "]\n"
 	returnString += "WatchingTwitchChannel: [" + conf.WatchingTwitchChannel + "]\n"
 	for _, value := range conf.UCloudConfigs {
 		returnString += "UCloudConfig: [" + value.UCloudHookEndPoint + "] [" + value.UCloudHookPort + "] [" + value.UCloudAccessToken + "] \n"
@@ -123,10 +123,10 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 					conf.onlineNotify, _ = strconv.ParseBool(row[1])
 				} else if row[0] == configKeyResidentDiscordChannelID {
 					conf.ResidentDiscordChannelID = row[1]
-				} else if row[0] == configKeyBeamWatchingChannelID {
-					conf.WatchingBeamChannel = row[1]
-				} else if row[0] == configKeyHitboxWatchingChannelID {
-					conf.WatchingHitboxChannel = row[1]
+				} else if row[0] == configKeyMixerWatchingChannelID {
+					conf.WatchingMixerChannel = row[1]
+				} else if row[0] == configKeySmashcastWatchingChannelID {
+					conf.WatchingSmashcastChannel = row[1]
 				} else if row[0] == configKeyTwitchWatchingChannelID {
 					conf.WatchingTwitchChannel = row[1]
 				} else if row[0] == configKeyBroadcastDiscordChannelID {
