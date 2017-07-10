@@ -159,19 +159,19 @@ func (conf *botConfig) Setup(sheetData []gshelp.GSheetData) error {
 
 	// Check if everything is good.
 	if isEmptyOrHasSpace(conf.CommandPrefix) {
-		return errors.New("Oops! Illegal CommandPrefix in config file! Please fix this!")
+		return errors.New("Oops! Illegal CommandPrefix in config file! Please fix this. ")
 	}
 
 	if isEmptyOrHasSpace(conf.lineSheetID) {
-		return errors.New("Oops! Illegal lineSheetID in config file! Please fix this!")
+		return errors.New("Oops! Illegal lineSheetID in config file! Please fix this! ")
 	}
 
 	if isEmptyOrHasSpace(conf.literalCommandSheetID) {
-		return errors.New("Oops! Illegal literalCommandSheetID in config file! Please fix this!")
+		return errors.New("Oops! Illegal literalCommandSheetID in config file! Please fix this! ")
 	}
 
 	if isEmptyOrHasSpace(conf.ResidentDiscordChannelID) {
-		return errors.New("Oops! Illegal ResidentDiscordChannelID in config file! Please fix this!")
+		return errors.New("Oops! Illegal ResidentDiscordChannelID in config file! Please fix this! ")
 	}
 
 	return nil

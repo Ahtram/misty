@@ -52,7 +52,7 @@ func (misty *Misty) Start() error {
 		// If the user does not behave as we think...
 		fmt.Println(Red("Input vars not legal!"))
 		flag.Usage()
-		return errors.New("Program exit gracefully...")
+		return errors.New("Program exit gracefully. ")
 	}
 
 	// Update data.
