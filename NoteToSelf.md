@@ -92,5 +92,18 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get dist-upgrade
 
+Update Golang
+下載壓縮檔:
+wget https://redirector.gvt1.com/edgedl/go/go1.9.2.linux-amd64.tar.gz
+解壓縮:
+tar -zxvf go1.9.2.linux-amd64.tar.gz
+移除舊版本:
+sudo rm -r /usr/local/go
+我們把Go放在這邊:
+/usr/local/
+所以把解完壓縮的檔案移動到目標:
+sudo mv go /usr/local/
+go version 確認是否為新版本
+
 t s
 9x0pqnylwo29q3otad4k88e1x8t1ge

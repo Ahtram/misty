@@ -557,7 +557,7 @@ func (misty *Misty) startObserveStreamingStatus() {
 	}()
 
 	//Observe the watching Twitch channel.
-	twitchTicker := time.NewTicker(time.Second * 10)
+	twitchTicker := time.NewTicker(time.Second * 50)
 	go func() {
 		for _ = range twitchTicker.C {
 			//Prevent observing when the bot is updating or do not have a Twitch channel name.
