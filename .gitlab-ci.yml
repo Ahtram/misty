@@ -23,6 +23,9 @@ stages:
 format:
     stage: test
     script:
+      - go get github.com/bwmarrin/discordgo
+      - go get github.com/fatih/color
+      - go get github.com/julienschmidt/httprouter
       - go fmt $(go list ./... | grep -v /vendor/)
       - go vet $(go list ./... | grep -v /vendor/)
       - go test -race $(go list ./... | grep -v /vendor/)
