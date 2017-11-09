@@ -33,6 +33,9 @@ format:
 compile:
     stage: build
     script:
+      - go get github.com/bwmarrin/discordgo
+      - go get github.com/fatih/color
+      - go get github.com/julienschmidt/httprouter
       - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/mybinary
     artifacts:
       paths:
